@@ -16,9 +16,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val signUpResult: LiveData<Task<AuthResult>>
         get() = _signUpResult
 
+    private val _currentUser = MutableLiveData<String>()
+    val currentUser: LiveData<String>
+        get() = _currentUser
+
     fun signUp(email: String, pw: String) {
         mAuth.signInWithEmailAndPassword(email, pw).addOnCompleteListener {
             _signUpResult.value = it
+        }
+    }
+
+    fun checkForUser() {
+        val user = mAuth.currentUser
+        if (user != null) {
+            _currentUser.value = user.email.toString()
         }
     }
 }

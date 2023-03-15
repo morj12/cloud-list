@@ -21,7 +21,7 @@ class RegisterActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[RegisterViewModel::class.java]
         setupListeners()
-        subscribe()
+        observe()
     }
 
     private fun setupListeners() = with(binding) {
@@ -48,7 +48,7 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun forgotPassword(email: String) = viewModel.forgotPassword(email)
 
-    private fun subscribe() {
+    private fun observe() {
         viewModel.registerResult.observe(this) {
             if (it.isSuccessful) {
                 Toast.makeText(this, "User created successfully", Toast.LENGTH_SHORT).show()

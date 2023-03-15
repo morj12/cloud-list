@@ -25,7 +25,12 @@ class MainActivity : AppCompatActivity() {
 
         setupListeners()
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        subscribe()
+        observe()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.checkForUser()
     }
 
     private fun setupListeners() = with(binding) {
@@ -59,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun signUp(email: String, pw: String) = viewModel.signUp(email, pw)
 
-    private fun subscribe() {
+    private fun observe() {
         viewModel.signUpResult.observe(this) {
             when {
                 it.isSuccessful -> {
@@ -71,6 +76,10 @@ class MainActivity : AppCompatActivity() {
                         .show()
                 }
             }
+        }
+
+        viewModel.currentUser.observe(this) {
+            startListActivity(it)
         }
     }
 
