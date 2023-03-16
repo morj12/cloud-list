@@ -23,6 +23,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if (intent.hasExtra("finish")) {
+            finishAffinity()
+        }
+
         setupListeners()
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         observe()
@@ -50,17 +54,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this@MainActivity, RegisterActivity::class.java))
         }
 
-        btLocalAcc.setOnClickListener {
-            startListActivity(ANONYMOUS_EMAIL)
-        }
+        btLocalAcc.setOnClickListener { startListActivity(ANONYMOUS_EMAIL) }
     }
 
-    override fun onBackPressed() {
-        val startMain = Intent(Intent.ACTION_MAIN)
-        startMain.addCategory(Intent.CATEGORY_HOME)
-        startMain.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(startMain)
-    }
+    override fun onBackPressed() = finishAffinity()
 
     private fun signUp(email: String, pw: String) = viewModel.signUp(email, pw)
 
@@ -77,7 +74,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
         viewModel.currentUser.observe(this) {
             startListActivity(it)
         }
