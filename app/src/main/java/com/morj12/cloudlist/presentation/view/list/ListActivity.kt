@@ -19,13 +19,7 @@ class ListActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ListViewModel
 
-    /**
-     * TODO:
-     * FRAGMENTS
-     * 1. channel fragment find or create new
-     * 2. cart fragment (list of carts create-delete)
-     * 3. item fragment (list of items create-delete)
-     */
+    // TODO: deactivate carts with a flag instead of removing them
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

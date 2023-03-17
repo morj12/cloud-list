@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.morj12.cloudlist.domain.entity.Cart
 import com.morj12.cloudlist.domain.entity.Channel
 import com.morj12.cloudlist.utils.Datetime
@@ -37,6 +38,8 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     private var localCarts = mutableListOf<Cart>()
 
+    private var updates: ListenerRegistration? = null
+
     fun setUserEmail(email: String) {
         _userEmail.value = email
     }
@@ -48,6 +51,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setChannel(channel: Channel?) {
         _channel.value = channel
+        if (channel == null) stopRealtimeUpdates()
     }
 
     private fun setCarts(carts: List<Cart>) {
@@ -151,7 +155,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setupRealtimeUpdates() {
-        db.collection("channels")
+        updates = db.collection("channels")
             .document(channel.value!!.name)
             .collection("carts")
             .addSnapshotListener { value, _ ->
@@ -160,6 +164,10 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                     _carts.value = localCarts
                 }
             }
+    }
+
+    fun stopRealtimeUpdates() {
+        updates = null
     }
 
 }
