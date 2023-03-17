@@ -20,7 +20,6 @@ class ListActivity : AppCompatActivity() {
     private lateinit var viewModel: ListViewModel
 
     // TODO later: deactivate carts with a flag instead of removing them
-    // TODO later: set max size for edit text
     // TODO later: translate to other languages
 
     override fun onCreate(savedInstanceState: Bundle?) {
