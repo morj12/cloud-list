@@ -15,4 +15,5 @@
     <string name="navigation_drawer_close">Close</string>
     <string name="connect_to_last_channel">Connect: %1$s</string>
     <string name="channel_disconnect">Disconnect</string>
+    <string name="cart_price">%1$s €</string>
 </resources>

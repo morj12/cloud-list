@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.morj12.cloudlist.databinding.FragmentCartBinding
 import com.morj12.cloudlist.presentation.view.adapter.CartAdapter
 
@@ -34,6 +36,8 @@ class CartFragment : Fragment() {
         initRecyclerView()
         loadCarts()
         initListeners()
+        setupSwipeListener()
+        setupRealtimeUpdates()
         observe()
     }
 
@@ -50,12 +54,39 @@ class CartFragment : Fragment() {
             viewModel.setChannel(null)
         }
         binding.fabNewCart.setOnClickListener {
-            // TODO: create new cart with current datetime and 0 price
+            viewModel.createNewCart()
         }
     }
 
+    private fun setupSwipeListener() {
+        val callback = object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ) = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val item = adapter.currentList[viewHolder.adapterPosition]
+                viewModel.deleteCart(item)
+            }
+        }
+
+        val itemTouchHelper = ItemTouchHelper(callback)
+        itemTouchHelper.attachToRecyclerView(binding.rcCart)
+    }
+
+    private fun setupRealtimeUpdates() {
+        viewModel.setupRealtimeUpdates()
+    }
+
     private fun observe() {
-        viewModel.carts.observe(viewLifecycleOwner, adapter::submitList)
+        viewModel.carts.observe(viewLifecycleOwner) {
+            adapter.submitList(it.toList())
+        }
         viewModel.channel.observe(viewLifecycleOwner) {
             if (it == null) requireActivity().supportFragmentManager.popBackStack()
         }

@@ -80,7 +80,6 @@ class ListActivity : AppCompatActivity() {
                     // TODO: implement later
                 }
                 else -> {
-                    viewModel.searchForLastChannel()
                     loadChannelFragment()
                 }
             }

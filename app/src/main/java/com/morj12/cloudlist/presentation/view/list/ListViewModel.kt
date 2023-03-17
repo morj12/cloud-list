@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.morj12.cloudlist.domain.entity.Cart
 import com.morj12.cloudlist.domain.entity.Channel
+import com.morj12.cloudlist.utils.Datetime
 
 class ListViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -34,6 +35,8 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     val userLastChannel: LiveData<Channel?>
         get() = _userLastChannel
 
+    private var localCarts = mutableListOf<Cart>()
+
     fun setUserEmail(email: String) {
         _userEmail.value = email
     }
@@ -48,6 +51,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun setCarts(carts: List<Cart>) {
+        localCarts = carts as MutableList<Cart>
         _carts.value = carts
     }
 
@@ -120,6 +124,41 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
                 _userLastChannel.value = channel
+            }
+    }
+
+    fun deleteCart(cart: Cart) {
+        db.collection("channels")
+            .document(channel.value!!.name)
+            .collection("carts")
+            .document(cart.timestamp.toString())
+            .delete()
+    }
+
+    fun createNewCart() {
+        val time = Datetime.getTimeStamp(Datetime.getCurrentTime())
+        val cart = Cart(time, 0)
+        db.collection("channels")
+            .document(channel.value!!.name)
+            .collection("carts")
+            .document(time.toString())
+            .set(
+                mapOf(
+                    "timestamp" to cart.timestamp,
+                    "price" to cart.price
+                )
+            )
+    }
+
+    fun setupRealtimeUpdates() {
+        db.collection("channels")
+            .document(channel.value!!.name)
+            .collection("carts")
+            .addSnapshotListener { value, _ ->
+                if (value != null) {
+                    localCarts = value.map { it.toObject(Cart::class.java) } as MutableList<Cart>
+                    _carts.value = localCarts
+                }
             }
     }
 

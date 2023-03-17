@@ -5,13 +5,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.CartItemBinding
 import com.morj12.cloudlist.domain.entity.Cart
+import com.morj12.cloudlist.utils.Datetime
 
 class CartAdapter : ListAdapter<Cart, CartAdapter.ViewHolder>(CartCallback()) {
 
     class CartCallback : DiffUtil.ItemCallback<Cart>() {
-        override fun areItemsTheSame(oldItem: Cart, newItem: Cart) = oldItem.id == newItem.id
+        override fun areItemsTheSame(oldItem: Cart, newItem: Cart) = oldItem.timestamp == newItem.timestamp
 
         override fun areContentsTheSame(oldItem: Cart, newItem: Cart) = oldItem == newItem
     }
@@ -30,8 +32,8 @@ class CartAdapter : ListAdapter<Cart, CartAdapter.ViewHolder>(CartCallback()) {
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
         with(holder.binding) {
-            cartItemDatetime.text = item.datetime
-            cartItemPrice.text = item.price.toString()
+            cartItemDatetime.text = Datetime.getDateTime(item.timestamp)
+            cartItemPrice.text = root.context.getString(R.string.cart_price, item.price.toString())
         }
     }
 }
