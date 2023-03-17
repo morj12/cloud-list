@@ -46,6 +46,10 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     val items: LiveData<List<Item>>
         get() = _items
 
+    private val _cartPrice = MutableLiveData<Double>()
+    val cartPrice: LiveData<Double>
+        get() = _cartPrice
+
     private var localCarts = mutableListOf<Cart>()
 
     private var localItems = mutableListOf<Item>()
@@ -174,7 +178,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     fun createNewCart() {
         val time = Datetime.getTimeStamp(Datetime.getCurrentTime())
-        val cart = Cart(time, 0)
+        val cart = Cart(time, 0.0)
         db.collection("channels")
             .document(channel.value!!.name)
             .collection("carts")
@@ -226,6 +230,19 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                         doc["isChecked"] as Boolean
                     )
                 })
+                if (localItems.isNotEmpty())
+                    setCartPrice(localItems.map { item -> item.price }.reduce { a, b -> a + b })
+            }
+    }
+
+    private fun setCartPrice(price: Double) {
+        db.collection("channels")
+            .document(channel.value!!.name)
+            .collection("carts")
+            .document(cart.value!!.timestamp.toString())
+            .update("price", price)
+            .addOnSuccessListener {
+                _cartPrice.value = price
             }
     }
 
@@ -233,7 +250,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
         val isChecked = if (update) {
             item.isChecked
         } else
-            // Get current item state if exists
+        // Get current item state if exists
             localItems.firstOrNull { item.name == it.name }?.isChecked ?: item.isChecked
         db.collection("channels")
             .document(channel.value!!.name)
@@ -277,6 +294,8 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                     } as MutableList<Item>
                     localItems = items
                     _items.value = localItems
+                    if (localItems.isNotEmpty())
+                        setCartPrice(localItems.map { item -> item.price }.reduce { a, b -> a + b })
                 }
             }
     }

@@ -108,6 +108,9 @@ class ItemFragment : Fragment() {
         viewModel.items.observe(viewLifecycleOwner) {
             adapter.submitList(it)
         }
+        viewModel.cartPrice.observe(viewLifecycleOwner) {
+            binding.tvFragmentItemCartPrice.text = getString(R.string.cart_price_text, it.toString())
+        }
     }
 
     companion object {

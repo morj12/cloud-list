@@ -16,6 +16,7 @@
     <string name="connect_to_last_channel">Connect: %1$s</string>
     <string name="channel_disconnect">Disconnect</string>
     <string name="cart_price">%1$s €</string>
+    <string name="cart_price_text">Cart total: %1$s €</string>
     <string name="add_new_item">Add new item</string>
     <string name="item_name">Name</string>
     <string name="item_price">Price</string>
