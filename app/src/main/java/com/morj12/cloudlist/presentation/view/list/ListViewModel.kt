@@ -5,10 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.morj12.cloudlist.domain.entity.Cart
 import com.morj12.cloudlist.domain.entity.Channel
+import com.morj12.cloudlist.domain.entity.Item
 import com.morj12.cloudlist.utils.Datetime
 
 class ListViewModel(application: Application) : AndroidViewModel(application) {
@@ -36,9 +38,21 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     val userLastChannel: LiveData<Channel?>
         get() = _userLastChannel
 
+    private val _cart = MutableLiveData<Cart?>()
+    val cart: LiveData<Cart?>
+        get() = _cart
+
+    private val _items = MutableLiveData<List<Item>>()
+    val items: LiveData<List<Item>>
+        get() = _items
+
     private var localCarts = mutableListOf<Cart>()
 
-    private var updates: ListenerRegistration? = null
+    private var localItems = mutableListOf<Item>()
+
+    private var channelUpdates: ListenerRegistration? = null
+
+    private var cartUpdates: ListenerRegistration? = null
 
     fun setUserEmail(email: String) {
         _userEmail.value = email
@@ -51,12 +65,28 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setChannel(channel: Channel?) {
         _channel.value = channel
-        if (channel == null) stopRealtimeUpdates()
+        if (channel == null) {
+            stopRealtimeChannelUpdates()
+            _carts.value = listOf()
+        }
     }
 
     private fun setCarts(carts: List<Cart>) {
         localCarts = carts as MutableList<Cart>
         _carts.value = carts
+    }
+
+    fun setCart(cart: Cart?) {
+        _cart.value = cart
+        if (cart == null) {
+            stopRealtimeCartUpdates()
+            _items.value = listOf()
+        }
+    }
+
+    private fun setItems(items: List<Item>) {
+        localItems = items as MutableList<Item>
+        _items.value = items
     }
 
     fun loadCartsFromDb() {
@@ -137,6 +167,9 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
             .collection("carts")
             .document(cart.timestamp.toString())
             .delete()
+            .addOnSuccessListener {
+                setCart(null)
+            }
     }
 
     fun createNewCart() {
@@ -154,20 +187,102 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
             )
     }
 
-    fun setupRealtimeUpdates() {
-        updates = db.collection("channels")
+    fun setupRealtimeChannelUpdates() {
+        channelUpdates = db.collection("channels")
             .document(channel.value!!.name)
             .collection("carts")
             .addSnapshotListener { value, _ ->
+                // Update cart list
                 if (value != null) {
                     localCarts = value.map { it.toObject(Cart::class.java) } as MutableList<Cart>
                     _carts.value = localCarts
                 }
+                // Check if current cart was removed from outside
+                if (value!!.documentChanges.any {
+                        it.type == DocumentChange.Type.REMOVED
+                                && it.document.toObject(Cart::class.java) == _cart.value
+                    }) {
+                    setCart(null)
+                }
             }
     }
 
-    fun stopRealtimeUpdates() {
-        updates = null
+    private fun stopRealtimeChannelUpdates() {
+        channelUpdates = null
+    }
+
+    fun loadItemsFromDb() {
+        db.collection("channels")
+            .document(channel.value!!.name)
+            .collection("carts")
+            .document(cart.value!!.timestamp.toString())
+            .collection("items")
+            .get()
+            .addOnSuccessListener {
+                setItems(it.map { doc ->
+                    Item(
+                        doc["name"] as String,
+                        doc["price"] as Double,
+                        doc["isChecked"] as Boolean
+                    )
+                })
+            }
+    }
+
+    fun addOrUpdateItem(item: Item, update: Boolean = false) {
+        val isChecked = if (update) {
+            item.isChecked
+        } else
+            // Get current item state if exists
+            localItems.firstOrNull { item.name == it.name }?.isChecked ?: item.isChecked
+        db.collection("channels")
+            .document(channel.value!!.name)
+            .collection("carts")
+            .document(cart.value!!.timestamp.toString())
+            .collection("items")
+            .document(item.name)
+            .set(
+                mapOf(
+                    "name" to item.name,
+                    "price" to item.price,
+                    "isChecked" to isChecked
+                )
+            )
+    }
+
+    fun deleteItem(item: Item) {
+        db.collection("channels")
+            .document(channel.value!!.name)
+            .collection("carts")
+            .document(cart.value!!.timestamp.toString())
+            .collection("items")
+            .document(item.name)
+            .delete()
+    }
+
+    fun setupRealtimeCartUpdates() {
+        cartUpdates = db.collection("channels")
+            .document(channel.value!!.name)
+            .collection("carts")
+            .document(cart.value!!.timestamp.toString())
+            .collection("items")
+            .addSnapshotListener { value, _ ->
+                if (value != null) {
+                    val items = value.map {
+                        Item(
+                            it["name"] as String,
+                            it["price"] as Double,
+                            it["isChecked"] as Boolean
+                        )
+                    } as MutableList<Item>
+                    localItems = items
+                    _items.value = localItems
+                }
+            }
+    }
+
+    private fun stopRealtimeCartUpdates() {
+        cartUpdates = null
     }
 
 }

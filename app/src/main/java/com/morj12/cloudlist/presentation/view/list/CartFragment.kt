@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentCartBinding
 import com.morj12.cloudlist.presentation.view.adapter.CartAdapter
 
@@ -34,6 +35,7 @@ class CartFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[ListViewModel::class.java]
         initRecyclerView()
+        initOnItemClickedListener()
         loadCarts()
         initListeners()
         setupSwipeListener()
@@ -45,6 +47,10 @@ class CartFragment : Fragment() {
         adapter = CartAdapter()
         binding.rcCart.layoutManager = LinearLayoutManager(activity)
         binding.rcCart.adapter = adapter
+    }
+
+    private fun initOnItemClickedListener() {
+        adapter.onItemClickedListener = { viewModel.setCart(it) }
     }
 
     private fun loadCarts() = viewModel.loadCartsFromDb()
@@ -80,7 +86,7 @@ class CartFragment : Fragment() {
     }
 
     private fun setupRealtimeUpdates() {
-        viewModel.setupRealtimeUpdates()
+        viewModel.setupRealtimeChannelUpdates()
     }
 
     private fun observe() {
@@ -90,6 +96,18 @@ class CartFragment : Fragment() {
         viewModel.channel.observe(viewLifecycleOwner) {
             if (it == null) requireActivity().supportFragmentManager.popBackStack()
         }
+        viewModel.cart.observe(viewLifecycleOwner) {
+            if (it != null) {
+                loadItemFragment()
+            }
+        }
+    }
+
+    private fun loadItemFragment() {
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.fl_fragment, ItemFragment.newInstance())
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onDestroy() {

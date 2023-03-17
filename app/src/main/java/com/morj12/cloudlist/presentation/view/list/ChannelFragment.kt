@@ -24,11 +24,10 @@ class ChannelFragment : Fragment() {
 
     private lateinit var lastChannel: Channel
 
-    // TODO: detach firestore listener on leaving cart
-    // TODO: create ItemFragment
-    // TODO: allow adding items
-    // TODO: allow removing items
+    // TODO: use buttons for removing carts and items instead of swipes
     // TODO: recalculate cart price based on its items
+    // TODO: beautify, use card layouts
+    // TODO: use usecases
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

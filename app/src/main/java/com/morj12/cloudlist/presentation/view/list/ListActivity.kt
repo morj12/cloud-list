@@ -19,7 +19,9 @@ class ListActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ListViewModel
 
-    // TODO: deactivate carts with a flag instead of removing them
+    // TODO later: deactivate carts with a flag instead of removing them
+    // TODO later: set max size for edit text
+    // TODO later: translate to other languages
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +61,9 @@ class ListActivity : AppCompatActivity() {
             is CartFragment -> {
                 viewModel.setChannel(null)
             }
+            is ItemFragment -> {
+                viewModel.setCart(null)
+            }
         }
     }
 
@@ -71,7 +76,7 @@ class ListActivity : AppCompatActivity() {
                     startActivity(intent)
                 }
                 ANONYMOUS_EMAIL -> {
-                    // TODO: implement later
+                    // TODO later: implement
                 }
                 else -> {
                     loadChannelFragment()
