@@ -35,8 +35,7 @@
 
     <Button
         android:id="@+id/bt_register_create"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/CloudListButton"
         android:layout_margin="20dp"
         android:enabled="false"
         android:text="@string/create_account"
@@ -44,10 +43,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ed_register_pw" />
 
+    <ProgressBar
+        android:id="@+id/pb_register"
+        style="@style/CloudListProgressBar"
+        android:layout_margin="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ed_register_pw" />
+
     <Button
         android:id="@+id/bt_register_forgot"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/CloudListButton"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="30dp"
@@ -56,5 +62,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/pb_forgot"
+        style="@style/CloudListProgressBar"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

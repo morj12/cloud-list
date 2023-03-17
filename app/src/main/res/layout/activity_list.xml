@@ -8,11 +8,10 @@
 
     <Button
         android:id="@+id/bt_list_sign_out"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/CloudListButton"
         android:layout_margin="20dp"
-        android:visibility="gone"
         android:text="@string/sign_out"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

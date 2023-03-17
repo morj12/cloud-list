@@ -8,8 +8,7 @@
 
     <Button
         android:id="@+id/bt_login"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/CloudListButton"
         android:layout_margin="20dp"
         android:enabled="false"
         android:text="@string/login"
@@ -17,10 +16,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ed_login_pw" />
 
+    <ProgressBar
+        android:id="@+id/pb_login"
+        style="@style/CloudListProgressBar"
+        android:layout_margin="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ed_login_pw" />
+
     <Button
         android:id="@+id/bt_register"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/CloudListButton"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
@@ -32,8 +38,7 @@
 
     <Button
         android:id="@+id/bt_local_acc"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/CloudListButton"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="30dp"

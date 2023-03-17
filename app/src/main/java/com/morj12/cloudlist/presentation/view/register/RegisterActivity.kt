@@ -7,6 +7,8 @@ import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
 import com.morj12.cloudlist.utils.Credentials.isValidCredentials
 import com.morj12.cloudlist.databinding.ActivityRegisterBinding
+import com.morj12.cloudlist.utils.startLoading
+import com.morj12.cloudlist.utils.stopLoading
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -36,10 +38,12 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         btRegisterCreate.setOnClickListener {
+            btRegisterCreate.startLoading(pbRegister)
             register(edRegisterEmail.text.toString(), edRegisterPw.text.toString())
         }
 
         btRegisterForgot.setOnClickListener {
+            btRegisterForgot.startLoading(pbForgot)
             forgotPassword(edRegisterEmail.text.toString())
         }
     }
@@ -55,6 +59,7 @@ class RegisterActivity : AppCompatActivity() {
                 finish()
             } else {
                 Toast.makeText(this, it.exception?.message, Toast.LENGTH_SHORT).show()
+                binding.btRegisterCreate.stopLoading(binding.pbRegister)
             }
         }
 
@@ -68,6 +73,7 @@ class RegisterActivity : AppCompatActivity() {
                 finish()
             } else {
                 Toast.makeText(this, it.exception?.message, Toast.LENGTH_SHORT).show()
+                binding.btRegisterForgot.stopLoading(binding.pbForgot)
             }
         }
     }

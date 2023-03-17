@@ -3,6 +3,8 @@ package com.morj12.cloudlist.presentation.view.main
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
@@ -12,6 +14,8 @@ import com.morj12.cloudlist.databinding.ActivityMainBinding
 import com.morj12.cloudlist.presentation.view.list.ListActivity
 import com.morj12.cloudlist.utils.Constants.ANONYMOUS_EMAIL
 import com.morj12.cloudlist.utils.Constants.EMAIL_KEY
+import com.morj12.cloudlist.utils.startLoading
+import com.morj12.cloudlist.utils.stopLoading
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,6 +51,7 @@ class MainActivity : AppCompatActivity() {
                 isValidCredentials(edLoginEmail.text.toString(), text.toString())
         }
         btLogin.setOnClickListener {
+            btLogin.startLoading(pbLogin)
             signUp(edLoginEmail.text.toString(), edLoginPw.text.toString())
         }
 
@@ -69,6 +74,7 @@ class MainActivity : AppCompatActivity() {
                     startListActivity(binding.edLoginEmail.text.toString())
                 }
                 else -> {
+                    binding.btLogin.stopLoading(binding.pbLogin)
                     Toast.makeText(this@MainActivity, it.exception?.message, Toast.LENGTH_SHORT)
                         .show()
                 }
@@ -85,5 +91,6 @@ class MainActivity : AppCompatActivity() {
         }
         startActivity(intent)
     }
+
 
 }

@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentChannelBinding
 import com.morj12.cloudlist.domain.entity.Channel
+import com.morj12.cloudlist.utils.startLoading
+import com.morj12.cloudlist.utils.stopLoading
 
 class ChannelFragment : Fragment() {
 
@@ -42,16 +44,19 @@ class ChannelFragment : Fragment() {
         edChannelName.doOnTextChanged { _, _, _, _ -> validateCredentials() }
         edChannelKey.doOnTextChanged { _, _, _, _ -> validateCredentials() }
         btChannelConnect.setOnClickListener {
+            btChannelConnect.startLoading(pbChannelConnect)
             val name = edChannelName.text.toString()
             val key = edChannelKey.text.toString().toLong()
             viewModel.connectToChannel(name, key)
         }
         btChannelCreate.setOnClickListener {
+            btChannelCreate.startLoading(pbChannelCreate)
             val name = edChannelName.text.toString()
             val key = edChannelKey.text.toString().toLong()
             viewModel.createNewChannel(name, key)
         }
         btChannelLast.setOnClickListener {
+            btChannelLast.startLoading(pbChannelLast)
             viewModel.setChannel(lastChannel)
         }
     }
@@ -60,6 +65,11 @@ class ChannelFragment : Fragment() {
 
     private fun observe() {
         viewModel.channel.observe(viewLifecycleOwner) {
+            with(binding) {
+                btChannelCreate.stopLoading(pbChannelCreate)
+                btChannelLast.stopLoading(pbChannelLast)
+                btChannelConnect.stopLoading(pbChannelConnect)
+            }
             if (it != null) {
                 loadCartFragment()
             } else {
@@ -68,6 +78,7 @@ class ChannelFragment : Fragment() {
             }
         }
         viewModel.error.observe(viewLifecycleOwner) {
+            binding.btChannelConnect.stopLoading(binding.pbChannelConnect)
             Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
         }
         viewModel.userLastChannel.observe(viewLifecycleOwner) {
@@ -76,6 +87,7 @@ class ChannelFragment : Fragment() {
                 binding.btChannelLast.text =
                     getString(R.string.connect_to_last_channel, lastChannel.name)
                 binding.btChannelLast.visibility = View.VISIBLE
+                binding.btChannelLast.stopLoading()
             } else {
                 binding.btChannelLast.visibility = View.GONE
             }
