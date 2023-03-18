@@ -3,11 +3,12 @@ package com.morj12.cloudlist.presentation.view.main
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
-import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.morj12.cloudlist.R
 import com.morj12.cloudlist.utils.Credentials.isValidCredentials
 import com.morj12.cloudlist.presentation.view.register.RegisterActivity
 import com.morj12.cloudlist.databinding.ActivityMainBinding
@@ -70,19 +71,33 @@ class MainActivity : AppCompatActivity() {
         viewModel.signUpResult.observe(this) {
             when {
                 it.isSuccessful -> {
-                    Toast.makeText(this@MainActivity, "Logged in", Toast.LENGTH_SHORT).show()
                     startListActivity(binding.edLoginEmail.text.toString())
                 }
                 else -> {
+                    var exception = ""
                     binding.btLogin.stopLoading(binding.pbLogin)
-                    Toast.makeText(this@MainActivity, it.exception?.message, Toast.LENGTH_SHORT)
-                        .show()
+                    exception = if (shouldBeShownToUserException(it.exception))
+                        "Invalid user email or password"
+                    else
+                        it.exception.toString()
+                    showSnackbar(exception)
                 }
             }
         }
         viewModel.currentUser.observe(this) {
             startListActivity(it)
         }
+    }
+
+    private fun showSnackbar(it: String) {
+        Snackbar.make(binding.root, it, Snackbar.LENGTH_SHORT)
+            .setTextColor(resources.getColor(R.color.black))
+            .setBackgroundTint(resources.getColor(R.color.white))
+            .show()
+    }
+
+    private fun shouldBeShownToUserException(exception: java.lang.Exception?): Boolean {
+        return exception is FirebaseAuthInvalidUserException
     }
 
     private fun startListActivity(email: String) {

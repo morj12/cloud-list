@@ -20,8 +20,6 @@ class ListActivity : AppCompatActivity() {
     private lateinit var viewModel: ListViewModel
 
     // TODO later: translate to other languages
-    // TODO later: improve toasts
-    // TODO later: show only necessary errors while signing in or signing up
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

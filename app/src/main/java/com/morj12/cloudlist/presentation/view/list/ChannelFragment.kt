@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.snackbar.Snackbar
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentChannelBinding
 import com.morj12.cloudlist.domain.entity.Channel
@@ -24,6 +25,7 @@ class ChannelFragment : Fragment() {
 
     private lateinit var lastChannel: Channel
 
+    // TODO: extract resources from code
     // TODO: use usecases
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,7 +82,7 @@ class ChannelFragment : Fragment() {
         }
         viewModel.error.observe(viewLifecycleOwner) {
             binding.btChannelConnect.stopLoading(binding.pbChannelConnect)
-            Toast.makeText(activity, it, Toast.LENGTH_SHORT).show()
+            showSnackbar(it)
         }
         viewModel.userLastChannel.observe(viewLifecycleOwner) {
             if (it != null) {
@@ -93,6 +95,13 @@ class ChannelFragment : Fragment() {
                 binding.btChannelLast.visibility = View.GONE
             }
         }
+    }
+
+    private fun showSnackbar(it: String) {
+        Snackbar.make(binding.root, it, Snackbar.LENGTH_SHORT)
+            .setTextColor(requireActivity().resources.getColor(R.color.black))
+            .setBackgroundTint(requireActivity().resources.getColor(R.color.white))
+            .show()
     }
 
     private fun loadCartFragment() {

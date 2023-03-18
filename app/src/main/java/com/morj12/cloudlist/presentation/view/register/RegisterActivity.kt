@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.snackbar.Snackbar
+import com.morj12.cloudlist.R
 import com.morj12.cloudlist.utils.Credentials.isValidCredentials
 import com.morj12.cloudlist.databinding.ActivityRegisterBinding
 import com.morj12.cloudlist.utils.startLoading
@@ -58,11 +60,12 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, "User created successfully", Toast.LENGTH_SHORT).show()
                 finish()
             } else {
-                Toast.makeText(this, it.exception?.message, Toast.LENGTH_SHORT).show()
+                showSnackbar(getString(R.string.any_exception))
                 binding.btRegisterCreate.stopLoading(binding.pbRegister)
             }
         }
 
+        // TODO: do not allow to know if there is already a user with current email
         viewModel.forgotPasswordResult.observe(this) {
             if (it.isSuccessful) {
                 Toast.makeText(
@@ -72,9 +75,16 @@ class RegisterActivity : AppCompatActivity() {
                 ).show()
                 finish()
             } else {
-                Toast.makeText(this, it.exception?.message, Toast.LENGTH_SHORT).show()
+                showSnackbar(getString(R.string.any_exception))
                 binding.btRegisterForgot.stopLoading(binding.pbForgot)
             }
         }
+    }
+
+    private fun showSnackbar(it: String) {
+        Snackbar.make(binding.root, it, Snackbar.LENGTH_SHORT)
+            .setTextColor(resources.getColor(R.color.black))
+            .setBackgroundTint(resources.getColor(R.color.white))
+            .show()
     }
 }
