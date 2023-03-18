@@ -3,7 +3,6 @@ package com.morj12.cloudlist.presentation.view.main
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar

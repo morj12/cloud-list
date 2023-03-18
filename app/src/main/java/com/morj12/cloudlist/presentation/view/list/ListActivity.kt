@@ -8,7 +8,6 @@ import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.ActivityListBinding
-
 import com.morj12.cloudlist.presentation.view.main.MainActivity
 import com.morj12.cloudlist.utils.Constants.ANONYMOUS_EMAIL
 import com.morj12.cloudlist.utils.Constants.EMAIL_KEY
