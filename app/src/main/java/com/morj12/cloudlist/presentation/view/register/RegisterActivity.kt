@@ -60,7 +60,7 @@ class RegisterActivity : AppCompatActivity() {
     private fun observe() {
         viewModel.registerResult.observe(this) {
             if (it.isSuccessful) {
-                Toast.makeText(this, "User created successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.user_created_ok), Toast.LENGTH_SHORT).show()
                 finish()
             } else {
                 showSnackbar(getString(R.string.any_exception))
@@ -72,7 +72,7 @@ class RegisterActivity : AppCompatActivity() {
             if (it.isSuccessful || it.exception is FirebaseAuthInvalidUserException) {
                 Toast.makeText(
                     this,
-                    "Message sent to ${binding.edRegisterEmail.text}",
+                    getString(R.string.message_sent_email_ok, binding.edRegisterEmail.text),
                     Toast.LENGTH_SHORT
                 ).show()
                 finish()

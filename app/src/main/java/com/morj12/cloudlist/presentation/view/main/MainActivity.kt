@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
                     var exception = ""
                     binding.btLogin.stopLoading(binding.pbLogin)
                     exception = if (shouldBeShownToUserException(it.exception))
-                        "Invalid user email or password"
+                        getString(R.string.invalid_email_or_pw)
                     else
                         it.exception.toString()
                     showSnackbar(exception)

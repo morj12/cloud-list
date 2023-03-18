@@ -25,7 +25,6 @@ class ChannelFragment : Fragment() {
 
     private lateinit var lastChannel: Channel
 
-    // TODO: extract resources from code
     // TODO: use usecases
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,7 +49,7 @@ class ChannelFragment : Fragment() {
             btChannelConnect.startLoading(pbChannelConnect)
             val name = edChannelName.text.toString()
             val key = edChannelKey.text.toString().toLong()
-            viewModel.connectToChannel(name, key)
+            viewModel.connectToChannel(requireActivity(), name, key)
         }
         btChannelCreate.setOnClickListener {
             btChannelCreate.startLoading(pbChannelCreate)

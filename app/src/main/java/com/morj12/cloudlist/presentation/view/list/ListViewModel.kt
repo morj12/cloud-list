@@ -1,6 +1,7 @@
 package com.morj12.cloudlist.presentation.view.list
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.morj12.cloudlist.R
 import com.morj12.cloudlist.domain.entity.Cart
 import com.morj12.cloudlist.domain.entity.Channel
 import com.morj12.cloudlist.domain.entity.Item
@@ -103,7 +105,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
-    fun connectToChannel(name: String, key: Long) {
+    fun connectToChannel(context: Context, name: String, key: Long) {
         db.collection("channels")
             .whereEqualTo("name", name)
             .whereEqualTo("key", key)
@@ -111,7 +113,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
             .addOnSuccessListener {
                 val channel = it.firstOrNull()?.toObject(Channel::class.java)
                 if (channel == null) {
-                    _error.value = "Channel not found"
+                    _error.value = context.getString(R.string.channel_not_found)
                 } else {
                     setChannel(channel)
                     saveLastChannel(channel)

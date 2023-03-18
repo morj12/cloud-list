@@ -52,7 +52,6 @@ class ItemFragment : Fragment() {
         binding.rcItem.adapter = adapter
         adapter.onCheckClickedListener = {
             viewModel.addOrUpdateItem(it.copy(isChecked = !it.isChecked), true)
-            Log.d("RC_UPD", "${it.name} was updated")
         }
         adapter.onItemDeleteClickedListener = {
             DeleteDialog.showDialog(requireContext(), it) {
