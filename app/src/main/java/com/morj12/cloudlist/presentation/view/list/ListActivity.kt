@@ -19,8 +19,6 @@ class ListActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ListViewModel
 
-    // TODO later: translate to other languages
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityListBinding.inflate(layoutInflater)

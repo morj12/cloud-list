@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cloud List</string>
+    <string name="sign_out">Salir</string>
+    <string name="login">Entrar</string>
+    <string name="register">Registrarse</string>
+    <string name="use_local_account">Cuenta local</string>
+    <string name="email">Email</string>
+    <string name="password">Contraseña</string>
+    <string name="create_account">Crear cuenta</string>
+    <string name="forgot_password">Recuperar contraseña</string>
+    <string name="channel_name">Nombre de canal</string>
+    <string name="channel_key">Clave de canal</string>
+    <string name="channel_connect">Conectarse</string>
+    <string name="channel_create">Crear canal</string>
+    <string name="connect_to_last_channel">Conectarse: %1$s</string>
+    <string name="channel_disconnect">Desconectarse</string>
+    <string name="cart_price">%1$s €</string>
+    <string name="cart_price_text">Coste total: %1$s €</string>
+    <string name="add_new_item">Añadir producto</string>
+    <string name="item_name">Nombre</string>
+    <string name="item_price">Precio</string>
+    <string name="add">Añadir</string>
+    <string name="empty_item_name">Nombre vacío</string>
+    <string name="item_already_exists">El producto ya existe</string>
+    <string name="dialog_yes">Eliminar</string>
+    <string name="dialog_no">Cancelar</string>
+    <string name="dialog_question_cart">Desea eliminar la cesta?</string>
+    <string name="dialog_question_item">Desea eliminar %1$s?</string>
+    <string name="any_exception">Se ha producido un error</string>
+    <string name="channel_not_found">Canal no encontrado</string>
+    <string name="invalid_email_or_pw">La cuenta o la contraseña es incorrecta</string>
+    <string name="user_created_ok">La cuenta ha sido creada</string>
+    <string name="message_sent_email_ok">El mensaje ha sido enviado a %1$s</string>
+</resources>

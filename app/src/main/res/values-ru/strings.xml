@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cloud List</string>
+    <string name="sign_out">Выйти</string>
+    <string name="login">Войти</string>
+    <string name="register">Зарегистрироваться</string>
+    <string name="use_local_account">Локальный аккаунт</string>
+    <string name="email">Логин</string>
+    <string name="password">Пароль</string>
+    <string name="create_account">Создать аккаунт</string>
+    <string name="forgot_password">Восстановить пароль</string>
+    <string name="channel_name">Имя канала</string>
+    <string name="channel_key">Ключ канала</string>
+    <string name="channel_connect">Подключиться</string>
+    <string name="channel_create">Создать канал</string>
+    <string name="connect_to_last_channel">Подключиться: %1$s</string>
+    <string name="channel_disconnect">Отключиться</string>
+    <string name="cart_price">%1$s €</string>
+    <string name="cart_price_text">Общая стоимость: %1$s €</string>
+    <string name="add_new_item">Добавить продукт</string>
+    <string name="item_name">Название</string>
+    <string name="item_price">Стоимость</string>
+    <string name="add">Добавить</string>
+    <string name="empty_item_name">Пустое название продукта</string>
+    <string name="item_already_exists">Продукт уже добавлен</string>
+    <string name="dialog_yes">далить</string>
+    <string name="dialog_no">Назад</string>
+    <string name="dialog_question_cart">Вы хотите удалить данную корзину?</string>
+    <string name="dialog_question_item">вы хотите удалить %1$s?</string>
+    <string name="any_exception">Произошла ошибка</string>
+    <string name="channel_not_found">Канал не найден</string>
+    <string name="invalid_email_or_pw">Неверный логин или пароль</string>
+    <string name="user_created_ok">Пользователь успешно создан</string>
+    <string name="message_sent_email_ok">Сообщение отправлено по адресу %1$s</string>
+</resources>

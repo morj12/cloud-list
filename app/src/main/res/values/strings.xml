@@ -12,7 +12,6 @@
     <string name="channel_key">Channel key</string>
     <string name="channel_connect">Connect</string>
     <string name="channel_create">Create channel</string>
-    <string name="navigation_drawer_close">Close</string>
     <string name="connect_to_last_channel">Connect: %1$s</string>
     <string name="channel_disconnect">Disconnect</string>
     <string name="cart_price">%1$s €</string>
