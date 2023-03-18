@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentCartBinding
 import com.morj12.cloudlist.presentation.adapter.CartAdapter
+import com.morj12.cloudlist.presentation.dialog.DeleteDialog
 
 
 class CartFragment : Fragment() {
@@ -49,7 +50,11 @@ class CartFragment : Fragment() {
         )
         binding.rcCart.adapter = adapter
         adapter.onItemClickedListener = { viewModel.setCart(it) }
-        adapter.onItemDeleteClickedListener = {viewModel.deleteCart(it)}
+        adapter.onItemDeleteClickedListener = {
+            DeleteDialog.showDialog(requireContext(), it) {
+                viewModel.deleteCart(it)
+            }
+        }
     }
 
     private fun loadCarts() = viewModel.loadCartsFromDb()

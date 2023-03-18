@@ -19,7 +19,6 @@ class ListActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ListViewModel
 
-    // TODO later: deactivate carts with a flag instead of removing them
     // TODO later: translate to other languages
     // TODO later: improve toasts
     // TODO later: show only necessary errors while signing in or signing up

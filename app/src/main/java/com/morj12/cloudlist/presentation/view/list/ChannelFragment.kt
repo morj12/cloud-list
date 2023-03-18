@@ -24,9 +24,7 @@ class ChannelFragment : Fragment() {
 
     private lateinit var lastChannel: Channel
 
-    // TODO: use buttons for removing carts and items instead of swipes
     // TODO: use usecases
-    // TODO: show last channel loading on init
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

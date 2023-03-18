@@ -13,6 +13,7 @@ import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentItemBinding
 import com.morj12.cloudlist.domain.entity.Item
 import com.morj12.cloudlist.presentation.adapter.ItemAdapter
+import com.morj12.cloudlist.presentation.dialog.DeleteDialog
 
 class ItemFragment : Fragment() {
 
@@ -53,7 +54,11 @@ class ItemFragment : Fragment() {
             viewModel.addOrUpdateItem(it.copy(isChecked = !it.isChecked), true)
             Log.d("RC_UPD", "${it.name} was updated")
         }
-        adapter.onItemDeleteClickedListener = { viewModel.deleteItem(it) }
+        adapter.onItemDeleteClickedListener = {
+            DeleteDialog.showDialog(requireContext(), it) {
+                viewModel.deleteItem(it)
+            }
+        }
     }
 
     private fun loadItems() = viewModel.loadItemsFromDb()
