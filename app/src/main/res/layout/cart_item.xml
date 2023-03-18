@@ -4,14 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="12dp"
-    android:layout_marginEnd="12dp"
     android:layout_marginTop="12dp"
     android:paddingStart="3dp"
     android:paddingTop="10dp"
-    android:paddingEnd="3dp"
-    app:cardCornerRadius="4dp"
-    app:cardElevation="10dp">
+    android:paddingEnd="3dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -23,21 +19,33 @@
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
             android:textSize="20sp"
-            tools:text="Sample datetime"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Sample datetime" />
 
         <TextView
             android:id="@+id/cart_item_price"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
-            tools:text="Sample price"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cart_item_datetime" />
+            app:layout_constraintTop_toBottomOf="@id/cart_item_datetime"
+            tools:text="Sample price" />
+
+        <ImageView
+            android:id="@+id/bt_remove_cart_item"
+            android:layout_width="0dp"
+            app:layout_constraintDimensionRatio="1:1"
+            android:layout_height="0dp"
+            android:layout_margin="6dp"
+            android:baselineAlignBottom="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_delete"
+            app:tint="@color/red" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>

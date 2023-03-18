@@ -1,17 +1,19 @@
 package com.morj12.cloudlist.presentation.view.list
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentCartBinding
 import com.morj12.cloudlist.presentation.view.adapter.CartAdapter
+
 
 class CartFragment : Fragment() {
 
@@ -35,10 +37,8 @@ class CartFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[ListViewModel::class.java]
         initRecyclerView()
-        initOnItemClickedListener()
         loadCarts()
         initListeners()
-        setupSwipeListener()
         setupRealtimeUpdates()
         observe()
     }
@@ -46,11 +46,12 @@ class CartFragment : Fragment() {
     private fun initRecyclerView() {
         adapter = CartAdapter()
         binding.rcCart.layoutManager = LinearLayoutManager(activity)
+        binding.rcCart.addItemDecoration(
+            DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
+        )
         binding.rcCart.adapter = adapter
-    }
-
-    private fun initOnItemClickedListener() {
         adapter.onItemClickedListener = { viewModel.setCart(it) }
+        adapter.onItemDeleteClickedListener = {viewModel.deleteCart(it)}
     }
 
     private fun loadCarts() = viewModel.loadCartsFromDb()
@@ -64,30 +65,7 @@ class CartFragment : Fragment() {
         }
     }
 
-    private fun setupSwipeListener() {
-        val callback = object : ItemTouchHelper.SimpleCallback(
-            0,
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-        ) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ) = false
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val item = adapter.currentList[viewHolder.adapterPosition]
-                viewModel.deleteCart(item)
-            }
-        }
-
-        val itemTouchHelper = ItemTouchHelper(callback)
-        itemTouchHelper.attachToRecyclerView(binding.rcCart)
-    }
-
-    private fun setupRealtimeUpdates() {
-        viewModel.setupRealtimeChannelUpdates()
-    }
+    private fun setupRealtimeUpdates() = viewModel.setupRealtimeChannelUpdates()
 
     private fun observe() {
         viewModel.carts.observe(viewLifecycleOwner) {

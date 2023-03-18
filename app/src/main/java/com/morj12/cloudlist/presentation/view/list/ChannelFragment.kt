@@ -25,9 +25,6 @@ class ChannelFragment : Fragment() {
     private lateinit var lastChannel: Channel
 
     // TODO: use buttons for removing carts and items instead of swipes
-    // TODO: recalculate cart price based on its items
-    // TODO: add cart price info to ItemFragment
-    // TODO: beautify, use card layouts
     // TODO: use usecases
     // TODO: show last channel loading on init
     override fun onCreateView(

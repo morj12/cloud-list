@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -39,7 +40,6 @@ class ItemFragment : Fragment() {
         initRecyclerView()
         loadItems()
         initListeners()
-        setupSwipeListener()
         setupRealtimeUpdates()
         observe()
     }
@@ -47,16 +47,18 @@ class ItemFragment : Fragment() {
     private fun initRecyclerView() {
         adapter = ItemAdapter()
         binding.rcItem.layoutManager = LinearLayoutManager(activity)
+        binding.rcItem.addItemDecoration(
+            DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
+        )
         binding.rcItem.adapter = adapter
         adapter.onCheckClickedListener = {
             viewModel.addOrUpdateItem(it.copy(isChecked = !it.isChecked), true)
             Log.d("RC_UPD", "${it.name} was updated")
         }
+        adapter.onItemDeleteClickedListener = { viewModel.deleteItem(it) }
     }
 
-    private fun loadItems() {
-        viewModel.loadItemsFromDb()
-    }
+    private fun loadItems() = viewModel.loadItemsFromDb()
 
     private fun initListeners() = with(binding) {
         btAddNewItem.setOnClickListener {
@@ -74,30 +76,7 @@ class ItemFragment : Fragment() {
         }
     }
 
-    private fun setupSwipeListener() {
-        val callback = object : ItemTouchHelper.SimpleCallback(
-            0,
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-        ) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ) = false
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val item = adapter.currentList[viewHolder.adapterPosition]
-                viewModel.deleteItem(item)
-            }
-        }
-
-        val itemTouchHelper = ItemTouchHelper(callback)
-        itemTouchHelper.attachToRecyclerView(binding.rcItem)
-    }
-
-    private fun setupRealtimeUpdates() {
-        viewModel.setupRealtimeCartUpdates()
-    }
+    private fun setupRealtimeUpdates() = viewModel.setupRealtimeCartUpdates()
 
     private fun observe() {
         viewModel.cart.observe(viewLifecycleOwner) {
@@ -109,8 +88,14 @@ class ItemFragment : Fragment() {
             adapter.submitList(it)
         }
         viewModel.cartPrice.observe(viewLifecycleOwner) {
-            binding.tvFragmentItemCartPrice.text = getString(R.string.cart_price_text, it.toString())
+            binding.tvFragmentItemCartPrice.text =
+                getString(R.string.cart_price_text, it.toString())
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     companion object {

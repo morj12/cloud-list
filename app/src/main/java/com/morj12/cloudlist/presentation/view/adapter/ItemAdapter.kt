@@ -13,6 +13,8 @@ class ItemAdapter : ListAdapter<Item, ItemAdapter.ViewHolder>(ItemCallback()) {
 
     var onCheckClickedListener: ((Item) -> Unit)? = null
 
+    var onItemDeleteClickedListener: ((Item) -> Unit)? = null
+
     class ItemCallback : DiffUtil.ItemCallback<Item>() {
         override fun areItemsTheSame(oldItem: Item, newItem: Item) = oldItem.name == newItem.name
 
@@ -38,6 +40,9 @@ class ItemAdapter : ListAdapter<Item, ItemAdapter.ViewHolder>(ItemCallback()) {
             cbItem.isChecked = item.isChecked
             cbItem.setOnClickListener {
                 onCheckClickedListener?.invoke(item)
+            }
+            btRemoveItemItem.setOnClickListener {
+                onItemDeleteClickedListener?.invoke(item)
             }
         }
     }

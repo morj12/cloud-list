@@ -14,6 +14,8 @@ class CartAdapter : ListAdapter<Cart, CartAdapter.ViewHolder>(CartCallback()) {
 
     var onItemClickedListener: ((Cart) -> Unit)? = null
 
+    var onItemDeleteClickedListener: ((Cart) -> Unit)? = null
+
     class CartCallback : DiffUtil.ItemCallback<Cart>() {
         override fun areItemsTheSame(oldItem: Cart, newItem: Cart) = oldItem.timestamp == newItem.timestamp
 
@@ -38,6 +40,9 @@ class CartAdapter : ListAdapter<Cart, CartAdapter.ViewHolder>(CartCallback()) {
             cartItemPrice.text = root.context.getString(R.string.cart_price, item.price.toString())
             root.setOnClickListener {
                 onItemClickedListener?.invoke(item)
+            }
+            btRemoveCartItem.setOnClickListener {
+                onItemDeleteClickedListener?.invoke(item)
             }
         }
     }
