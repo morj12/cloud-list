@@ -7,12 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentCartBinding
-import com.morj12.cloudlist.presentation.view.adapter.CartAdapter
+import com.morj12.cloudlist.presentation.adapter.CartAdapter
 
 
 class CartFragment : Fragment() {

@@ -8,13 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentItemBinding
 import com.morj12.cloudlist.domain.entity.Item
-import com.morj12.cloudlist.presentation.view.adapter.ItemAdapter
+import com.morj12.cloudlist.presentation.adapter.ItemAdapter
 
 class ItemFragment : Fragment() {
 

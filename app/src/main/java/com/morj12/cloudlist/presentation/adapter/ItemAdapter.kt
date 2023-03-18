@@ -1,4 +1,4 @@
-package com.morj12.cloudlist.presentation.view.adapter
+package com.morj12.cloudlist.presentation.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
