@@ -2,10 +2,13 @@ package com.morj12.cloudlist.presentation.view.register
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.utils.Credentials.isValidCredentials
 import com.morj12.cloudlist.databinding.ActivityRegisterBinding
@@ -65,9 +68,8 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
-        // TODO: do not allow to know if there is already a user with current email
         viewModel.forgotPasswordResult.observe(this) {
-            if (it.isSuccessful) {
+            if (it.isSuccessful || it.exception is FirebaseAuthInvalidUserException) {
                 Toast.makeText(
                     this,
                     "Message sent to ${binding.edRegisterEmail.text}",
