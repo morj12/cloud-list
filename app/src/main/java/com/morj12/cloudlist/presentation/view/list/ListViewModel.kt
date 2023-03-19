@@ -234,6 +234,8 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                 })
                 if (localItems.isNotEmpty())
                     setCartPrice(localItems.map { item -> item.price }.reduce { a, b -> a + b })
+                else
+                    setCartPrice(0.0)
             }
     }
 

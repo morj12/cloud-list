@@ -72,7 +72,9 @@ class CartFragment : Fragment() {
 
     private fun observe() {
         viewModel.carts.observe(viewLifecycleOwner) {
-            adapter.submitList(it.toList())
+            adapter.submitList(it.toList().reversed()) {
+                binding.rcCart.post { binding.rcCart.smoothScrollToPosition(0) }
+            }
         }
         viewModel.channel.observe(viewLifecycleOwner) {
             if (it == null) requireActivity().supportFragmentManager.popBackStack()
