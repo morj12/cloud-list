@@ -6,16 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".presentation.view.list.ListActivity">
 
-    <Button
-        android:id="@+id/bt_list_sign_out"
-        style="@style/CloudListButton"
-        android:layout_margin="20dp"
-        android:text="@string/sign_out"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <FrameLayout
         android:id="@+id/fl_fragment"
         android:layout_width="0dp"

@@ -28,7 +28,6 @@ class ListActivity : AppCompatActivity() {
 
         getUserEmail()
         observe()
-        setupListeners()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -95,11 +94,5 @@ class ListActivity : AppCompatActivity() {
             .replace(R.id.fl_fragment, ChannelFragment.newInstance())
             .addToBackStack(null)
             .commit()
-    }
-
-    private fun setupListeners() {
-        binding.btListSignOut.setOnClickListener {
-            onBackPressed()
-        }
     }
 }
