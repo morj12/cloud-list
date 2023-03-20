@@ -12,6 +12,7 @@ import com.morj12.cloudlist.App
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentChannelBinding
 import com.morj12.cloudlist.domain.entity.Channel
+import com.morj12.cloudlist.presentation.view.FragmentManager.loadCartFragment
 import com.morj12.cloudlist.utils.startLoading
 import com.morj12.cloudlist.utils.stopLoading
 
@@ -74,7 +75,7 @@ class ChannelFragment : Fragment() {
                 btChannelConnect.stopLoading(pbChannelConnect)
             }
             if (it != null) {
-                loadCartFragment()
+                loadCartFragment(requireActivity())
             } else {
                 binding.edChannelName.setText("")
                 binding.edChannelKey.setText("")
@@ -102,13 +103,6 @@ class ChannelFragment : Fragment() {
             .setTextColor(requireActivity().resources.getColor(R.color.black))
             .setBackgroundTint(requireActivity().resources.getColor(R.color.white))
             .show()
-    }
-
-    private fun loadCartFragment() {
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.fl_fragment, CartFragment.newInstance())
-            .addToBackStack(null)
-            .commit()
     }
 
     private fun validateCredentials() = with(binding) {

@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 
 class ListViewModel(localDb: AppDatabase) : ViewModel() {
 
-    // TODO: review
     private val itemRepo = ItemRepositoryImpl(localDb)
     private val cartRepo = CartRepositoryImpl(localDb)
 
@@ -36,31 +35,25 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
     val channel: LiveData<Channel?>
         get() = _channel
 
-    private val _carts = MutableLiveData<List<Cart>>()
-    val carts: LiveData<List<Cart>>
-        get() = _carts
-
-    private val _error = MutableLiveData<String>()
-    val error: LiveData<String>
-        get() = _error
-
     private val _userLastChannel = MutableLiveData<Channel?>()
     val userLastChannel: LiveData<Channel?>
         get() = _userLastChannel
 
-    private val _cart = MutableLiveData<Cart?>()
-    val cart: LiveData<Cart?>
-        get() = _cart
+    private val _carts = MutableLiveData<List<Cart>>()
+    val carts: LiveData<List<Cart>>
+        get() = _carts
 
     private val _items = MutableLiveData<List<Item>>()
     val items: LiveData<List<Item>>
         get() = _items
 
-    private val _cartPrice = MutableLiveData<Double>()
-    val cartPrice: LiveData<Double>
-        get() = _cartPrice
+    private val _error = MutableLiveData<String>()
+    val error: LiveData<String>
+        get() = _error
 
-    private var localCarts = mutableListOf<Cart>()
+    private val _cart = MutableLiveData<Cart?>()
+    val cart: LiveData<Cart?>
+        get() = _cart
 
     private var localItems = mutableListOf<Item>()
 
@@ -87,9 +80,7 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
     }
 
     private fun setCarts(carts: List<Cart>) {
-        localCarts = if (carts.isEmpty()) mutableListOf()
-        else carts as MutableList<Cart>
-        _carts.value = localCarts
+        _carts.value = carts
     }
 
     fun setCart(cart: Cart?) {
@@ -107,10 +98,6 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
 
     val loadLocalCarts = cartRepo.getCarts().asLiveData()
 
-    fun loadCartPrice() {
-        _cartPrice.value = cart.value!!.price
-    }
-
     private fun deleteLocalCart(cart: Cart) = viewModelScope.launch {
         cartRepo.deleteCart(cart)
     }
@@ -119,14 +106,23 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
 
     private fun updateCart(cart: Cart) = viewModelScope.launch {
         cartRepo.updateCart(cart)
-        _cartPrice.value = cart.price
     }
 
-    private fun addOrUpdateLocalItem(item: Item) = viewModelScope.launch {
-        val possibleItem = itemRepo.getItems(item.cartId, item.name).firstOrNull()
-        if (possibleItem == null) itemRepo.insertItem(item)
-        else itemRepo.updateItem(possibleItem.copy(price = item.price))
-    }
+    private fun addOrUpdateLocalItem(item: Item, updateCheck: Boolean = false) =
+        viewModelScope.launch {
+            item.cartId = cart.value!!.timestamp
+            val possibleItem = itemRepo.getItems(item.cartId, item.name).firstOrNull()
+            if (possibleItem == null) itemRepo.insertItem(item)
+            else {
+                itemRepo.updateItem(
+                    item.copy(
+                        price = item.price,
+                        isChecked = if (updateCheck) item.isChecked else possibleItem.isChecked,
+                        id = possibleItem.id
+                    )
+                )
+            }
+        }
 
     private fun deleteLocalItem(item: Item) = viewModelScope.launch {
         itemRepo.deleteItem(item)
@@ -250,9 +246,8 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
                 .addSnapshotListener { value, _ ->
                     // Update cart list
                     if (value != null) {
-                        localCarts =
+                        _carts.value =
                             value.map { it.toObject(Cart::class.java) } as MutableList<Cart>
-                        _carts.value = localCarts
                     }
                     // Check if current cart was removed from outside
                     if (value!!.documentChanges.any {
@@ -284,17 +279,18 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
                         doc["isChecked"] as Boolean
                     )
                 })
-                if (localItems.isNotEmpty())
-                    setCartPrice(localItems.map { item -> item.price }.reduce { a, b -> a + b })
-                else
-                    setCartPrice(0.0)
+                setCartPrice(localItems)
             }
     }
 
-    fun setCartPrice(price: Double) {
+    fun setCartPrice(list: List<Item>) {
+        val price = if (list.isEmpty()) 0.0
+        else list.map(Item::price).reduce { acc, d -> acc + d }
+
+        val copy = cart.value!!.copy(price = price)
         if (mode == Mode.LOCAL) {
-            _cartPrice.value = price
-            updateCart(cart.value!!.copy(price = price))
+            updateCart(copy)
+            _cart.value = copy
         } else
             firestoreDb.collection("channels")
                 .document(channel.value!!.name)
@@ -302,20 +298,20 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
                 .document(cart.value!!.timestamp.toString())
                 .update("price", price)
                 .addOnSuccessListener {
-                    _cartPrice.value = price
+                    _cart.value = copy
                 }
     }
 
-    fun addOrUpdateItem(item: Item, update: Boolean = false) {
-        val isChecked = if (update) {
-            item.isChecked
-        } else
-        // Get current item state if exists
-            localItems.firstOrNull { item.name == it.name }?.isChecked ?: item.isChecked
-
+    fun addOrUpdateItem(item: Item, updateCheck: Boolean = false) {
         if (mode == Mode.LOCAL) {
-            addOrUpdateLocalItem(item.copy(isChecked = isChecked, cartId = cart.value!!.timestamp))
-        } else
+            addOrUpdateLocalItem(item, updateCheck)
+        } else {
+            val isChecked = if (updateCheck) {
+                item.isChecked
+            } else {
+                // Get current item state if exists
+                localItems.firstOrNull { item.name == it.name }?.isChecked ?: item.isChecked
+            }
             firestoreDb.collection("channels")
                 .document(channel.value!!.name)
                 .collection("carts")
@@ -329,6 +325,7 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
                         "isChecked" to isChecked
                     )
                 )
+        }
     }
 
     fun deleteItem(item: Item) {
@@ -362,9 +359,7 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
                         } as MutableList<Item>
                         localItems = items
                         _items.value = localItems
-                        if (localItems.isNotEmpty())
-                            setCartPrice(localItems.map { item -> item.price }
-                                .reduce { a, b -> a + b })
+                        setCartPrice(localItems)
                     }
                 }
         }

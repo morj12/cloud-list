@@ -55,15 +55,12 @@ class ItemFragment : Fragment() {
             viewModel.addOrUpdateItem(it.copy(isChecked = !it.isChecked), true)
         }
         adapter.onItemDeleteClickedListener = {
-            DeleteDialog.showDialog(requireContext(), it) {
-                viewModel.deleteItem(it)
-            }
+            DeleteDialog.showDialog(requireContext(), it) { viewModel.deleteItem(it) }
         }
     }
 
     private fun loadItems() {
-        if (viewModel.mode == Mode.CLOUD)
-            viewModel.loadItemsFromDb()
+        if (viewModel.mode == Mode.CLOUD) viewModel.loadItemsFromDb()
     }
 
     private fun initListeners() = with(binding) {
@@ -88,24 +85,19 @@ class ItemFragment : Fragment() {
         viewModel.cart.observe(viewLifecycleOwner) {
             if (it == null) {
                 requireActivity().supportFragmentManager.popBackStack()
+            } else {
+                binding.tvFragmentItemCartPrice.text =
+                    getString(R.string.cart_price_text, it.price.toString())
             }
         }
         if (viewModel.mode == Mode.LOCAL)
             viewModel.loadLocalItems().observe(viewLifecycleOwner) {
-                viewModel.loadCartPrice()
-                if (it.isNotEmpty()) {
-                    viewModel.setCartPrice(it.map { item -> item.price }.reduce { a, b -> a + b })
-                }
+                viewModel.setCartPrice(it)
                 adapter.submitList(it)
             } else
             viewModel.items.observe(viewLifecycleOwner) {
                 adapter.submitList(it)
             }
-
-        viewModel.cartPrice.observe(viewLifecycleOwner) {
-            binding.tvFragmentItemCartPrice.text =
-                getString(R.string.cart_price_text, it.toString())
-        }
     }
 
     override fun onDestroy() {

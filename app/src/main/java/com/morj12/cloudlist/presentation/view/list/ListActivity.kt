@@ -9,6 +9,8 @@ import androidx.activity.viewModels
 import com.morj12.cloudlist.App
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.ActivityListBinding
+import com.morj12.cloudlist.presentation.view.FragmentManager.loadCartFragment
+import com.morj12.cloudlist.presentation.view.FragmentManager.loadChannelFragment
 import com.morj12.cloudlist.presentation.view.main.MainActivity
 import com.morj12.cloudlist.utils.Constants.ANONYMOUS_EMAIL
 import com.morj12.cloudlist.utils.Constants.EMAIL_KEY
@@ -55,12 +57,8 @@ class ListActivity : AppCompatActivity() {
                 intent.putExtra("finish", "")
                 startActivity(intent)
             }
-            is CartFragment -> {
-                viewModel.setChannel(null)
-            }
-            is ItemFragment -> {
-                viewModel.setCart(null)
-            }
+            is CartFragment -> viewModel.setChannel(null)
+            is ItemFragment -> viewModel.setCart(null)
         }
     }
 
@@ -72,27 +70,11 @@ class ListActivity : AppCompatActivity() {
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)
                 }
-                ANONYMOUS_EMAIL -> {
-                    loadCartFragment()
-                }
-                else -> {
-                    loadChannelFragment()
-                }
+                ANONYMOUS_EMAIL -> loadCartFragment(this)
+                else -> loadChannelFragment(this)
             }
         }
     }
 
-    private fun loadCartFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fl_fragment, CartFragment.newInstance())
-            .addToBackStack(null)
-            .commit()
-    }
 
-    private fun loadChannelFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fl_fragment, ChannelFragment.newInstance())
-            .addToBackStack(null)
-            .commit()
-    }
 }

@@ -4,6 +4,6 @@ data class Item(
     val name: String = "",
     val price: Double = 0.0,
     var isChecked: Boolean = false,
-    val cartId: Long = 0,
+    var cartId: Long = 0,
     val id: Int = 0
 )

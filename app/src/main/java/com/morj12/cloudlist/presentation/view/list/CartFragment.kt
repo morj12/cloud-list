@@ -14,8 +14,8 @@ import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentCartBinding
 import com.morj12.cloudlist.presentation.adapter.CartAdapter
 import com.morj12.cloudlist.presentation.dialog.DeleteDialog
+import com.morj12.cloudlist.presentation.view.FragmentManager.loadItemFragment
 import com.morj12.cloudlist.presentation.view.main.MainActivity
-
 
 class CartFragment : Fragment() {
 
@@ -62,15 +62,15 @@ class CartFragment : Fragment() {
     }
 
     private fun loadCarts() {
-        if (viewModel.mode == Mode.CLOUD)
-            viewModel.loadCartsFromDb()
+        if (viewModel.mode == Mode.CLOUD) viewModel.loadCartsFromDb()
     }
 
     private fun initListeners() {
         if (viewModel.mode == Mode.CLOUD)
             binding.btChannelDisconnect.setOnClickListener { viewModel.setChannel(null) }
-        else
+        else {
             binding.btChannelDisconnect.visibility = View.GONE
+        }
         binding.fabNewCart.setOnClickListener { viewModel.createNewCart() }
     }
 
@@ -81,9 +81,8 @@ class CartFragment : Fragment() {
         else viewModel.carts
         cartsSource.observe(viewLifecycleOwner) {
             adapter.submitList(it.toList().reversed()) {
-                if (it.isNotEmpty()) {
+                if (it.isNotEmpty())
                     binding.rcCart.post { binding.rcCart.smoothScrollToPosition(0) }
-                }
             }
         }
         viewModel.channel.observe(viewLifecycleOwner) {
@@ -95,17 +94,8 @@ class CartFragment : Fragment() {
             }
         }
         viewModel.cart.observe(viewLifecycleOwner) {
-            if (it != null) {
-                loadItemFragment()
-            }
+            if (it != null) loadItemFragment(requireActivity())
         }
-    }
-
-    private fun loadItemFragment() {
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.fl_fragment, ItemFragment.newInstance())
-            .addToBackStack(null)
-            .commit()
     }
 
     override fun onDestroy() {
