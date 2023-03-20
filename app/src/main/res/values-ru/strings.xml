@@ -23,7 +23,7 @@
     <string name="add">Добавить</string>
     <string name="empty_item_name">Пустое название продукта</string>
     <string name="item_already_exists">Продукт уже добавлен</string>
-    <string name="dialog_yes">далить</string>
+    <string name="dialog_yes">Удалить</string>
     <string name="dialog_no">Назад</string>
     <string name="dialog_question_cart">Вы хотите удалить данную корзину?</string>
     <string name="dialog_question_item">вы хотите удалить %1$s?</string>

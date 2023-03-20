@@ -1,24 +1,32 @@
 package com.morj12.cloudlist.presentation.view.list
 
-import android.app.Application
 import android.content.Context
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.morj12.cloudlist.R
+import com.morj12.cloudlist.data.AppDatabase
+import com.morj12.cloudlist.data.repository.CartRepositoryImpl
+import com.morj12.cloudlist.data.repository.ItemRepositoryImpl
 import com.morj12.cloudlist.domain.entity.Cart
 import com.morj12.cloudlist.domain.entity.Channel
 import com.morj12.cloudlist.domain.entity.Item
+import com.morj12.cloudlist.utils.Constants.ANONYMOUS_EMAIL
 import com.morj12.cloudlist.utils.Datetime
+import kotlinx.coroutines.launch
 
-class ListViewModel(application: Application) : AndroidViewModel(application) {
+class ListViewModel(localDb: AppDatabase) : ViewModel() {
+
+    // TODO: review
+    private val itemRepo = ItemRepositoryImpl(localDb)
+    private val cartRepo = CartRepositoryImpl(localDb)
+
+    lateinit var mode: Mode
 
     private var mAuth = FirebaseAuth.getInstance()
-    private var db = FirebaseFirestore.getInstance()
+    private var firestoreDb = FirebaseFirestore.getInstance()
 
     private val _userEmail = MutableLiveData("")
     val userEmail: LiveData<String>
@@ -62,6 +70,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setUserEmail(email: String) {
         _userEmail.value = email
+        mode = if (email == ANONYMOUS_EMAIL) Mode.LOCAL else Mode.CLOUD
     }
 
     fun signOut() {
@@ -78,8 +87,9 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun setCarts(carts: List<Cart>) {
-        localCarts = carts as MutableList<Cart>
-        _carts.value = carts
+        localCarts = if (carts.isEmpty()) mutableListOf()
+        else carts as MutableList<Cart>
+        _carts.value = localCarts
     }
 
     fun setCart(cart: Cart?) {
@@ -92,21 +102,53 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun setItems(items: List<Item>) {
         localItems = items as MutableList<Item>
-        _items.value = items
+        _items.value = localItems
+    }
+
+    val loadLocalCarts = cartRepo.getCarts().asLiveData()
+
+    fun loadCartPrice() {
+        _cartPrice.value = cart.value!!.price
+    }
+
+    private fun deleteLocalCart(cart: Cart) = viewModelScope.launch {
+        cartRepo.deleteCart(cart)
+    }
+
+    fun loadLocalItems() = itemRepo.getItems(cart.value!!.timestamp).asLiveData()
+
+    private fun updateCart(cart: Cart) = viewModelScope.launch {
+        cartRepo.updateCart(cart)
+        _cartPrice.value = cart.price
+    }
+
+    private fun addOrUpdateLocalItem(item: Item) = viewModelScope.launch {
+        val possibleItem = itemRepo.getItems(item.cartId, item.name).firstOrNull()
+        if (possibleItem == null) itemRepo.insertItem(item)
+        else itemRepo.updateItem(possibleItem.copy(price = item.price))
+    }
+
+    private fun deleteLocalItem(item: Item) = viewModelScope.launch {
+        itemRepo.deleteItem(item)
+    }
+
+    private fun createLocalCart(cart: Cart) = viewModelScope.launch {
+        cartRepo.insertCart(cart)
     }
 
     fun loadCartsFromDb() {
-        db.collection("channels")
+        firestoreDb.collection("channels")
             .document(channel.value!!.name)
             .collection("carts")
             .get()
             .addOnSuccessListener {
-                setCarts(it.map { doc -> doc.toObject(Cart::class.java) })
+                if (!it.isEmpty)
+                    setCarts(it.map { doc -> doc.toObject(Cart::class.java) })
             }
     }
 
     fun connectToChannel(context: Context, name: String, key: Long) {
-        db.collection("channels")
+        firestoreDb.collection("channels")
             .whereEqualTo("name", name)
             .whereEqualTo("key", key)
             .get()
@@ -122,7 +164,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun saveLastChannel(channel: Channel) {
-        db.collection("users")
+        firestoreDb.collection("users")
             .document(userEmail.value!!)
             .set(
                 mapOf(
@@ -134,13 +176,13 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun createNewChannel(name: String, key: Long) {
-        db.collection("channels")
+        firestoreDb.collection("channels")
             .whereEqualTo("name", name)
             .get()
             .addOnSuccessListener {
                 if (it.firstOrNull() == null) {
                     val newChannel = Channel(name, key)
-                    db.collection("channels")
+                    firestoreDb.collection("channels")
                         .document(name)
                         .set(newChannel)
                         .addOnSuccessListener {
@@ -151,7 +193,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun searchForLastChannel() {
-        db.collection("users")
+        firestoreDb.collection("users")
             .whereEqualTo("email", userEmail.value)
             .get()
             .addOnSuccessListener {
@@ -168,49 +210,59 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun deleteCart(cart: Cart) {
-        db.collection("channels")
-            .document(channel.value!!.name)
-            .collection("carts")
-            .document(cart.timestamp.toString())
-            .delete()
-            .addOnSuccessListener {
-                setCart(null)
-            }
+        if (mode == Mode.LOCAL) {
+            deleteLocalCart(cart)
+            setCart(null)
+        } else
+            firestoreDb.collection("channels")
+                .document(channel.value!!.name)
+                .collection("carts")
+                .document(cart.timestamp.toString())
+                .delete()
+                .addOnSuccessListener {
+                    setCart(null)
+                }
     }
 
     fun createNewCart() {
         val time = Datetime.getTimeStamp(Datetime.getCurrentTime())
         val cart = Cart(time, 0.0)
-        db.collection("channels")
-            .document(channel.value!!.name)
-            .collection("carts")
-            .document(time.toString())
-            .set(
-                mapOf(
-                    "timestamp" to cart.timestamp,
-                    "price" to cart.price
+        if (mode == Mode.LOCAL) {
+            createLocalCart(cart)
+        } else
+            firestoreDb.collection("channels")
+                .document(channel.value!!.name)
+                .collection("carts")
+                .document(time.toString())
+                .set(
+                    mapOf(
+                        "timestamp" to cart.timestamp,
+                        "price" to cart.price
+                    )
                 )
-            )
     }
 
     fun setupRealtimeChannelUpdates() {
-        channelUpdates = db.collection("channels")
-            .document(channel.value!!.name)
-            .collection("carts")
-            .addSnapshotListener { value, _ ->
-                // Update cart list
-                if (value != null) {
-                    localCarts = value.map { it.toObject(Cart::class.java) } as MutableList<Cart>
-                    _carts.value = localCarts
+        if (mode == Mode.CLOUD) {
+            channelUpdates = firestoreDb.collection("channels")
+                .document(channel.value!!.name)
+                .collection("carts")
+                .addSnapshotListener { value, _ ->
+                    // Update cart list
+                    if (value != null) {
+                        localCarts =
+                            value.map { it.toObject(Cart::class.java) } as MutableList<Cart>
+                        _carts.value = localCarts
+                    }
+                    // Check if current cart was removed from outside
+                    if (value!!.documentChanges.any {
+                            it.type == DocumentChange.Type.REMOVED
+                                    && it.document.toObject(Cart::class.java) == _cart.value
+                        }) {
+                        setCart(null)
+                    }
                 }
-                // Check if current cart was removed from outside
-                if (value!!.documentChanges.any {
-                        it.type == DocumentChange.Type.REMOVED
-                                && it.document.toObject(Cart::class.java) == _cart.value
-                    }) {
-                    setCart(null)
-                }
-            }
+        }
     }
 
     private fun stopRealtimeChannelUpdates() {
@@ -218,7 +270,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadItemsFromDb() {
-        db.collection("channels")
+        firestoreDb.collection("channels")
             .document(channel.value!!.name)
             .collection("carts")
             .document(cart.value!!.timestamp.toString())
@@ -239,15 +291,19 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
-    private fun setCartPrice(price: Double) {
-        db.collection("channels")
-            .document(channel.value!!.name)
-            .collection("carts")
-            .document(cart.value!!.timestamp.toString())
-            .update("price", price)
-            .addOnSuccessListener {
-                _cartPrice.value = price
-            }
+    fun setCartPrice(price: Double) {
+        if (mode == Mode.LOCAL) {
+            _cartPrice.value = price
+            updateCart(cart.value!!.copy(price = price))
+        } else
+            firestoreDb.collection("channels")
+                .document(channel.value!!.name)
+                .collection("carts")
+                .document(cart.value!!.timestamp.toString())
+                .update("price", price)
+                .addOnSuccessListener {
+                    _cartPrice.value = price
+                }
     }
 
     fun addOrUpdateItem(item: Item, update: Boolean = false) {
@@ -256,56 +312,75 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
         } else
         // Get current item state if exists
             localItems.firstOrNull { item.name == it.name }?.isChecked ?: item.isChecked
-        db.collection("channels")
-            .document(channel.value!!.name)
-            .collection("carts")
-            .document(cart.value!!.timestamp.toString())
-            .collection("items")
-            .document(item.name)
-            .set(
-                mapOf(
-                    "name" to item.name,
-                    "price" to item.price,
-                    "isChecked" to isChecked
+
+        if (mode == Mode.LOCAL) {
+            addOrUpdateLocalItem(item.copy(isChecked = isChecked, cartId = cart.value!!.timestamp))
+        } else
+            firestoreDb.collection("channels")
+                .document(channel.value!!.name)
+                .collection("carts")
+                .document(cart.value!!.timestamp.toString())
+                .collection("items")
+                .document(item.name)
+                .set(
+                    mapOf(
+                        "name" to item.name,
+                        "price" to item.price,
+                        "isChecked" to isChecked
+                    )
                 )
-            )
     }
 
     fun deleteItem(item: Item) {
-        db.collection("channels")
-            .document(channel.value!!.name)
-            .collection("carts")
-            .document(cart.value!!.timestamp.toString())
-            .collection("items")
-            .document(item.name)
-            .delete()
+        if (mode == Mode.LOCAL) {
+            deleteLocalItem(item)
+        } else
+            firestoreDb.collection("channels")
+                .document(channel.value!!.name)
+                .collection("carts")
+                .document(cart.value!!.timestamp.toString())
+                .collection("items")
+                .document(item.name)
+                .delete()
     }
 
     fun setupRealtimeCartUpdates() {
-        cartUpdates = db.collection("channels")
-            .document(channel.value!!.name)
-            .collection("carts")
-            .document(cart.value!!.timestamp.toString())
-            .collection("items")
-            .addSnapshotListener { value, _ ->
-                if (value != null) {
-                    val items = value.map {
-                        Item(
-                            it["name"] as String,
-                            it["price"] as Double,
-                            it["isChecked"] as Boolean
-                        )
-                    } as MutableList<Item>
-                    localItems = items
-                    _items.value = localItems
-                    if (localItems.isNotEmpty())
-                        setCartPrice(localItems.map { item -> item.price }.reduce { a, b -> a + b })
+        if (mode == Mode.CLOUD) {
+            cartUpdates = firestoreDb.collection("channels")
+                .document(channel.value!!.name)
+                .collection("carts")
+                .document(cart.value!!.timestamp.toString())
+                .collection("items")
+                .addSnapshotListener { value, _ ->
+                    if (value != null) {
+                        val items = value.map {
+                            Item(
+                                it["name"] as String,
+                                it["price"] as Double,
+                                it["isChecked"] as Boolean
+                            )
+                        } as MutableList<Item>
+                        localItems = items
+                        _items.value = localItems
+                        if (localItems.isNotEmpty())
+                            setCartPrice(localItems.map { item -> item.price }
+                                .reduce { a, b -> a + b })
+                    }
                 }
-            }
+        }
     }
 
     private fun stopRealtimeCartUpdates() {
         cartUpdates = null
+    }
+
+    class ListViewModelFactory(private val database: AppDatabase) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(ListViewModel::class.java)) {
+                return ListViewModel(database) as T
+            }
+            throw IllegalArgumentException("Unknown view model class")
+        }
     }
 
 }

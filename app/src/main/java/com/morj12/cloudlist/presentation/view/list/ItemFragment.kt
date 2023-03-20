@@ -1,14 +1,14 @@
 package com.morj12.cloudlist.presentation.view.list
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.morj12.cloudlist.App
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentItemBinding
 import com.morj12.cloudlist.domain.entity.Item
@@ -21,7 +21,9 @@ class ItemFragment : Fragment() {
     private val binding: FragmentItemBinding
         get() = _binding ?: throw RuntimeException("FragmentItemBinding is null")
 
-    private lateinit var viewModel: ListViewModel
+    private val viewModel: ListViewModel by activityViewModels {
+        ListViewModel.ListViewModelFactory((context?.applicationContext as App).db)
+    }
 
     private lateinit var adapter: ItemAdapter
 
@@ -35,7 +37,6 @@ class ItemFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(requireActivity())[ListViewModel::class.java]
         initRecyclerView()
         loadItems()
         initListeners()
@@ -60,7 +61,10 @@ class ItemFragment : Fragment() {
         }
     }
 
-    private fun loadItems() = viewModel.loadItemsFromDb()
+    private fun loadItems() {
+        if (viewModel.mode == Mode.CLOUD)
+            viewModel.loadItemsFromDb()
+    }
 
     private fun initListeners() = with(binding) {
         btAddNewItem.setOnClickListener {
@@ -86,9 +90,18 @@ class ItemFragment : Fragment() {
                 requireActivity().supportFragmentManager.popBackStack()
             }
         }
-        viewModel.items.observe(viewLifecycleOwner) {
-            adapter.submitList(it)
-        }
+        if (viewModel.mode == Mode.LOCAL)
+            viewModel.loadLocalItems().observe(viewLifecycleOwner) {
+                viewModel.loadCartPrice()
+                if (it.isNotEmpty()) {
+                    viewModel.setCartPrice(it.map { item -> item.price }.reduce { a, b -> a + b })
+                }
+                adapter.submitList(it)
+            } else
+            viewModel.items.observe(viewLifecycleOwner) {
+                adapter.submitList(it)
+            }
+
         viewModel.cartPrice.observe(viewLifecycleOwner) {
             binding.tvFragmentItemCartPrice.text =
                 getString(R.string.cart_price_text, it.toString())

@@ -5,7 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
+import com.morj12.cloudlist.App
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.ActivityListBinding
 import com.morj12.cloudlist.presentation.view.main.MainActivity
@@ -16,21 +17,23 @@ class ListActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityListBinding
 
-    private lateinit var viewModel: ListViewModel
+    private val viewModel: ListViewModel by viewModels {
+        ListViewModel.ListViewModelFactory((applicationContext as App).db)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this)[ListViewModel::class.java]
         getUserEmail()
         observe()
         setupListeners()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.action_bar_menu, menu)
+        if (viewModel.mode == Mode.CLOUD)
+            menuInflater.inflate(R.menu.action_bar_menu, menu)
         return true
     }
 
@@ -71,13 +74,20 @@ class ListActivity : AppCompatActivity() {
                     startActivity(intent)
                 }
                 ANONYMOUS_EMAIL -> {
-                    // TODO later: implement
+                    loadCartFragment()
                 }
                 else -> {
                     loadChannelFragment()
                 }
             }
         }
+    }
+
+    private fun loadCartFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fl_fragment, CartFragment.newInstance())
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun loadChannelFragment() {

@@ -6,8 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.doOnTextChanged
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import com.google.android.material.snackbar.Snackbar
+import com.morj12.cloudlist.App
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.databinding.FragmentChannelBinding
 import com.morj12.cloudlist.domain.entity.Channel
@@ -20,7 +21,9 @@ class ChannelFragment : Fragment() {
     private val binding: FragmentChannelBinding
         get() = _binding ?: throw RuntimeException("FragmentChannelBinding is null")
 
-    private lateinit var viewModel: ListViewModel
+    private val viewModel: ListViewModel by activityViewModels {
+        ListViewModel.ListViewModelFactory((context?.applicationContext as App).db)
+    }
 
     private lateinit var lastChannel: Channel
 
@@ -35,7 +38,6 @@ class ChannelFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(requireActivity())[ListViewModel::class.java]
         initListeners()
         searchLastChannel()
         observe()

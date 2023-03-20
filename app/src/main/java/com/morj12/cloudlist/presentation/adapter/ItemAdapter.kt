@@ -1,7 +1,9 @@
 package com.morj12.cloudlist.presentation.adapter
 
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -38,6 +40,7 @@ class ItemAdapter : ListAdapter<Item, ItemAdapter.ViewHolder>(ItemCallback()) {
             itemName.text = item.name
             itemPrice.text = root.context.getString(R.string.cart_price, item.price.toString())
             cbItem.isChecked = item.isChecked
+            setAppearance(this)
             cbItem.setOnClickListener {
                 onCheckClickedListener?.invoke(item)
             }
@@ -46,4 +49,18 @@ class ItemAdapter : ListAdapter<Item, ItemAdapter.ViewHolder>(ItemCallback()) {
             }
         }
     }
+
+    private fun setAppearance(binding: ItemItemBinding) =
+        binding.apply {
+            if (cbItem.isChecked) {
+                itemName.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
+                itemName.setTextColor(ContextCompat.getColor(binding.root.context, R.color.gray))
+            } else {
+                itemName.paintFlags = Paint.ANTI_ALIAS_FLAG
+                itemName.setTextColor(
+                    ContextCompat.getColor(binding.root.context, R.color.black)
+                )
+            }
+
+        }
 }
