@@ -6,11 +6,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
-import com.google.firebase.auth.FirebaseAuth
+import com.morj12.cloudlist.domain.usecase.GetCurrentUserUsecase
+import com.morj12.cloudlist.domain.usecase.LoginUseCase
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    private var mAuth = FirebaseAuth.getInstance()
+    private var loginUseCase = LoginUseCase()
+    private var getCurrentUserUsecase = GetCurrentUserUsecase()
 
     private val _signUpResult = MutableLiveData<Task<AuthResult>>()
     val signUpResult: LiveData<Task<AuthResult>>
@@ -21,13 +23,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         get() = _currentUser
 
     fun signUp(email: String, pw: String) {
-        mAuth.signInWithEmailAndPassword(email, pw).addOnCompleteListener {
+        loginUseCase(email, pw) {
             _signUpResult.value = it
         }
     }
 
     fun checkForUser() {
-        val user = mAuth.currentUser
+        val user = getCurrentUserUsecase()
         if (user != null) {
             _currentUser.value = user.email.toString()
         }
