@@ -7,10 +7,13 @@ import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.morj12.cloudlist.domain.usecase.ForgotPasswordUseCase
+import com.morj12.cloudlist.domain.usecase.RegisterUseCase
 
 class RegisterViewModel(application: Application) : AndroidViewModel(application) {
 
-    private var mAuth = FirebaseAuth.getInstance()
+    private var registerUseCase = RegisterUseCase()
+    private var forgotPasswordUseCase = ForgotPasswordUseCase()
 
     private val _registerResult = MutableLiveData<Task<AuthResult>>()
     val registerResult: LiveData<Task<AuthResult>>
@@ -21,13 +24,12 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
         get() = _forgotPasswordResult
 
     fun register(email: String, pw: String) {
-        mAuth.createUserWithEmailAndPassword(email, pw).addOnCompleteListener {
+        registerUseCase(email, pw) {
             _registerResult.value = it
         }
     }
 
     fun forgotPassword(email: String) {
-        mAuth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { _forgotPasswordResult.value = it }
+        forgotPasswordUseCase(email) { _forgotPasswordResult.value = it }
     }
 }
