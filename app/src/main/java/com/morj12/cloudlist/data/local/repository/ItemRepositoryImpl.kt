@@ -1,6 +1,6 @@
-package com.morj12.cloudlist.data.repository
+package com.morj12.cloudlist.data.local.repository
 
-import com.morj12.cloudlist.data.AppDatabase
+import com.morj12.cloudlist.data.local.AppDatabase
 import com.morj12.cloudlist.domain.entity.Item
 import com.morj12.cloudlist.domain.mapper.Mapper
 import com.morj12.cloudlist.domain.repository.ItemRepository

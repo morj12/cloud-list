@@ -1,7 +1,7 @@
 package com.morj12.cloudlist.domain.mapper
 
-import com.morj12.cloudlist.data.dbmodel.CartDbModel
-import com.morj12.cloudlist.data.dbmodel.ItemDbModel
+import com.morj12.cloudlist.data.local.dbmodel.CartDbModel
+import com.morj12.cloudlist.data.local.dbmodel.ItemDbModel
 import com.morj12.cloudlist.domain.entity.Cart
 import com.morj12.cloudlist.domain.entity.Item
 

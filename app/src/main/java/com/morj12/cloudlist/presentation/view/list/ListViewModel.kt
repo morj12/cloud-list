@@ -2,17 +2,17 @@ package com.morj12.cloudlist.presentation.view.list
 
 import android.content.Context
 import androidx.lifecycle.*
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.morj12.cloudlist.R
-import com.morj12.cloudlist.data.AppDatabase
-import com.morj12.cloudlist.data.repository.CartRepositoryImpl
-import com.morj12.cloudlist.data.repository.ItemRepositoryImpl
+import com.morj12.cloudlist.data.local.AppDatabase
+import com.morj12.cloudlist.data.local.repository.CartRepositoryImpl
+import com.morj12.cloudlist.data.local.repository.ItemRepositoryImpl
 import com.morj12.cloudlist.domain.entity.Cart
 import com.morj12.cloudlist.domain.entity.Channel
 import com.morj12.cloudlist.domain.entity.Item
+import com.morj12.cloudlist.domain.usecase.SignOutUseCase
 import com.morj12.cloudlist.utils.Constants.ANONYMOUS_EMAIL
 import com.morj12.cloudlist.utils.Datetime
 import kotlinx.coroutines.launch
@@ -24,7 +24,8 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
 
     lateinit var mode: Mode
 
-    private var mAuth = FirebaseAuth.getInstance()
+    private val signOutUseCase = SignOutUseCase()
+
     private var firestoreDb = FirebaseFirestore.getInstance()
 
     private val _userEmail = MutableLiveData("")
@@ -68,7 +69,7 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
 
     fun signOut() {
         _userEmail.value = ""
-        mAuth.signOut()
+        signOutUseCase()
     }
 
     fun setChannel(channel: Channel?) {

@@ -1,4 +1,4 @@
-package com.morj12.cloudlist.data.dbmodel
+package com.morj12.cloudlist.data.local.dbmodel
 
 import androidx.room.Entity
 import androidx.room.ForeignKey

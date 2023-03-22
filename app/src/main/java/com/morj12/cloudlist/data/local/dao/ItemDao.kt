@@ -1,4 +1,4 @@
-package com.morj12.cloudlist.data.dao
+package com.morj12.cloudlist.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.morj12.cloudlist.data.dbmodel.ItemDbModel
+import com.morj12.cloudlist.data.local.dbmodel.ItemDbModel
 import kotlinx.coroutines.flow.Flow
 
 @Dao
