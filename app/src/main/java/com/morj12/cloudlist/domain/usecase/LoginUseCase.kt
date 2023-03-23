@@ -9,8 +9,6 @@ class LoginUseCase {
     private var mAuth = FirebaseAuth.getInstance()
 
     operator fun invoke(email: String, pw: String, callback: (Task<AuthResult>) -> Unit) {
-        mAuth.signInWithEmailAndPassword(email, pw).addOnCompleteListener {
-            callback(it)
-        }
+        mAuth.signInWithEmailAndPassword(email, pw).addOnCompleteListener(callback)
     }
 }

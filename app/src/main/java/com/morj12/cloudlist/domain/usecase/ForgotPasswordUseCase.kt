@@ -8,8 +8,6 @@ class ForgotPasswordUseCase {
     private var mAuth = FirebaseAuth.getInstance()
 
     operator fun invoke(email: String, callback: (Task<Void>) -> Unit) {
-        mAuth.sendPasswordResetEmail(email).addOnCompleteListener {
-            callback(it)
-        }
+        mAuth.sendPasswordResetEmail(email).addOnCompleteListener(callback)
     }
 }

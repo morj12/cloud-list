@@ -9,8 +9,6 @@ class RegisterUseCase {
     private var mAuth = FirebaseAuth.getInstance()
 
     operator fun invoke(email: String, pw: String, callback: (Task<AuthResult>) -> Unit) {
-        mAuth.createUserWithEmailAndPassword(email, pw).addOnCompleteListener {
-            callback(it)
-        }
+        mAuth.createUserWithEmailAndPassword(email, pw).addOnCompleteListener(callback)
     }
 }

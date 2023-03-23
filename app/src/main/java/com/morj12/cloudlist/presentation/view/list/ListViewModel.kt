@@ -3,12 +3,12 @@ package com.morj12.cloudlist.presentation.view.list
 import android.content.Context
 import androidx.lifecycle.*
 import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.morj12.cloudlist.R
 import com.morj12.cloudlist.data.local.AppDatabase
 import com.morj12.cloudlist.data.local.repository.CartRepositoryImpl
 import com.morj12.cloudlist.data.local.repository.ItemRepositoryImpl
+import com.morj12.cloudlist.data.remote.repository.RemoteRepositoryImpl
 import com.morj12.cloudlist.domain.entity.Cart
 import com.morj12.cloudlist.domain.entity.Channel
 import com.morj12.cloudlist.domain.entity.Item
@@ -21,12 +21,12 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
 
     private val itemRepo = ItemRepositoryImpl(localDb)
     private val cartRepo = CartRepositoryImpl(localDb)
+    private val remoteRepo = RemoteRepositoryImpl()
 
     lateinit var mode: Mode
 
     private val signOutUseCase = SignOutUseCase()
 
-    private var firestoreDb = FirebaseFirestore.getInstance()
 
     private val _userEmail = MutableLiveData("")
     val userEmail: LiveData<String>
@@ -134,76 +134,51 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
     }
 
     fun loadCartsFromDb() {
-        firestoreDb.collection("channels")
-            .document(channel.value!!.name)
-            .collection("carts")
-            .get()
-            .addOnSuccessListener {
-                if (!it.isEmpty)
-                    setCarts(it.map { doc -> doc.toObject(Cart::class.java) })
-            }
+        remoteRepo.loadCarts(channel.value!!.name) {
+            if (!it.isEmpty)
+                setCarts(it.map { doc -> doc.toObject(Cart::class.java) })
+        }
     }
 
     fun connectToChannel(context: Context, name: String, key: Long) {
-        firestoreDb.collection("channels")
-            .whereEqualTo("name", name)
-            .whereEqualTo("key", key)
-            .get()
-            .addOnSuccessListener {
-                val channel = it.firstOrNull()?.toObject(Channel::class.java)
-                if (channel == null) {
-                    _error.value = context.getString(R.string.channel_not_found)
-                } else {
-                    setChannel(channel)
-                    saveLastChannel(channel)
-                }
+        remoteRepo.connectToChannel(name, key) {
+            val channel = it.firstOrNull()?.toObject(Channel::class.java)
+            if (channel == null) {
+                _error.value = context.getString(R.string.channel_not_found)
+            } else {
+                setChannel(channel)
+                saveLastChannel(channel)
             }
+        }
     }
 
     private fun saveLastChannel(channel: Channel) {
-        firestoreDb.collection("users")
-            .document(userEmail.value!!)
-            .set(
-                mapOf(
-                    "channelKey" to channel.key,
-                    "channelName" to channel.name,
-                    "email" to userEmail.value!!
-                )
-            )
+        remoteRepo.saveChannel(channel, userEmail.value!!)
     }
 
     fun createNewChannel(name: String, key: Long) {
-        firestoreDb.collection("channels")
-            .whereEqualTo("name", name)
-            .get()
-            .addOnSuccessListener {
-                if (it.firstOrNull() == null) {
-                    val newChannel = Channel(name, key)
-                    firestoreDb.collection("channels")
-                        .document(name)
-                        .set(newChannel)
-                        .addOnSuccessListener {
-                            setChannel(newChannel)
-                        }
+        remoteRepo.getChannel(name) {
+            if (it.firstOrNull() == null) {
+                val newChannel = Channel(name, key)
+                remoteRepo.createChannel(newChannel) {
+                    setChannel(newChannel)
                 }
             }
+        }
     }
 
     fun searchForLastChannel() {
-        firestoreDb.collection("users")
-            .whereEqualTo("email", userEmail.value)
-            .get()
-            .addOnSuccessListener {
-                var channel: Channel? = null
-                val channelData = it.firstOrNull()
-                if (channelData != null) {
-                    channel = Channel(
-                        name = channelData["channelName"] as String,
-                        key = channelData["channelKey"] as Long
-                    )
-                }
-                _userLastChannel.value = channel
+        remoteRepo.getLastChannel(userEmail.value!!) {
+            var channel: Channel? = null
+            val channelData = it.firstOrNull()
+            if (channelData != null) {
+                channel = Channel(
+                    name = channelData["channelName"] as String,
+                    key = channelData["channelKey"] as Long
+                )
             }
+            _userLastChannel.value = channel
+        }
     }
 
     fun deleteCart(cart: Cart) {
@@ -211,14 +186,9 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
             deleteLocalCart(cart)
             setCart(null)
         } else
-            firestoreDb.collection("channels")
-                .document(channel.value!!.name)
-                .collection("carts")
-                .document(cart.timestamp.toString())
-                .delete()
-                .addOnSuccessListener {
-                    setCart(null)
-                }
+            remoteRepo.deleteCart(channel.value!!.name, cart.timestamp.toString()) {
+                setCart(null)
+            }
     }
 
     fun createNewCart() {
@@ -227,37 +197,23 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
         if (mode == Mode.LOCAL) {
             createLocalCart(cart)
         } else
-            firestoreDb.collection("channels")
-                .document(channel.value!!.name)
-                .collection("carts")
-                .document(time.toString())
-                .set(
-                    mapOf(
-                        "timestamp" to cart.timestamp,
-                        "price" to cart.price
-                    )
-                )
+            remoteRepo.createCart(channel.value!!.name, cart)
     }
 
     fun setupRealtimeChannelUpdates() {
         if (mode == Mode.CLOUD) {
-            channelUpdates = firestoreDb.collection("channels")
-                .document(channel.value!!.name)
-                .collection("carts")
-                .addSnapshotListener { value, _ ->
-                    // Update cart list
-                    if (value != null) {
-                        _carts.value =
-                            value.map { it.toObject(Cart::class.java) } as MutableList<Cart>
-                    }
-                    // Check if current cart was removed from outside
-                    if (value!!.documentChanges.any {
-                            it.type == DocumentChange.Type.REMOVED
-                                    && it.document.toObject(Cart::class.java) == _cart.value
-                        }) {
-                        setCart(null)
-                    }
+            channelUpdates = remoteRepo.setupRealtimeChannelUpdates(channel.value!!.name) {
+                if (it != null) {
+                    _carts.value =
+                        it.map { obj -> obj.toObject(Cart::class.java) } as MutableList<Cart>
                 }
+                if (it!!.documentChanges.any { change ->
+                        change.type == DocumentChange.Type.REMOVED
+                                && change.document.toObject(Cart::class.java) == _cart.value
+                    }) {
+                    setCart(null)
+                }
+            }
         }
     }
 
@@ -266,22 +222,16 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
     }
 
     fun loadItemsFromDb() {
-        firestoreDb.collection("channels")
-            .document(channel.value!!.name)
-            .collection("carts")
-            .document(cart.value!!.timestamp.toString())
-            .collection("items")
-            .get()
-            .addOnSuccessListener {
-                setItems(it.map { doc ->
-                    Item(
-                        doc["name"] as String,
-                        doc["price"] as Double,
-                        doc["isChecked"] as Boolean
-                    )
-                })
-                setCartPrice(localItems)
-            }
+        remoteRepo.loadItems(channel.value!!.name, cart.value!!.timestamp.toString()) {
+            setItems(it.map { doc ->
+                Item(
+                    doc["name"] as String,
+                    doc["price"] as Double,
+                    doc["isChecked"] as Boolean
+                )
+            })
+            setCartPrice(localItems)
+        }
     }
 
     fun setCartPrice(list: List<Item>) {
@@ -293,39 +243,28 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
             updateCart(copy)
             _cart.value = copy
         } else
-            firestoreDb.collection("channels")
-                .document(channel.value!!.name)
-                .collection("carts")
-                .document(cart.value!!.timestamp.toString())
-                .update("price", price)
-                .addOnSuccessListener {
-                    _cart.value = copy
-                }
+            remoteRepo.updateCartPrice(
+                channel.value!!.name,
+                cart.value!!.timestamp.toString(),
+                price
+            ) {
+                _cart.value = copy
+            }
     }
 
     fun addOrUpdateItem(item: Item, updateCheck: Boolean = false) {
         if (mode == Mode.LOCAL) {
             addOrUpdateLocalItem(item, updateCheck)
         } else {
-            val isChecked = if (updateCheck) {
-                item.isChecked
-            } else {
-                // Get current item state if exists
-                localItems.firstOrNull { item.name == it.name }?.isChecked ?: item.isChecked
-            }
-            firestoreDb.collection("channels")
-                .document(channel.value!!.name)
-                .collection("carts")
-                .document(cart.value!!.timestamp.toString())
-                .collection("items")
-                .document(item.name)
-                .set(
-                    mapOf(
-                        "name" to item.name,
-                        "price" to item.price,
-                        "isChecked" to isChecked
-                    )
-                )
+            val newItem = item.copy(
+                isChecked = if (updateCheck) {
+                    item.isChecked
+                } else {
+                    // Get current item state if exists
+                    localItems.firstOrNull { item.name == it.name }?.isChecked ?: item.isChecked
+                }
+            )
+            remoteRepo.upsertItem(channel.value!!.name, cart.value!!.timestamp.toString(), newItem)
         }
     }
 
@@ -333,36 +272,28 @@ class ListViewModel(localDb: AppDatabase) : ViewModel() {
         if (mode == Mode.LOCAL) {
             deleteLocalItem(item)
         } else
-            firestoreDb.collection("channels")
-                .document(channel.value!!.name)
-                .collection("carts")
-                .document(cart.value!!.timestamp.toString())
-                .collection("items")
-                .document(item.name)
-                .delete()
+            remoteRepo.deleteItem(channel.value!!.name, cart.value!!.timestamp.toString(), item)
     }
 
     fun setupRealtimeCartUpdates() {
         if (mode == Mode.CLOUD) {
-            cartUpdates = firestoreDb.collection("channels")
-                .document(channel.value!!.name)
-                .collection("carts")
-                .document(cart.value!!.timestamp.toString())
-                .collection("items")
-                .addSnapshotListener { value, _ ->
-                    if (value != null) {
-                        val items = value.map {
-                            Item(
-                                it["name"] as String,
-                                it["price"] as Double,
-                                it["isChecked"] as Boolean
-                            )
-                        } as MutableList<Item>
-                        localItems = items
-                        _items.value = localItems
-                        setCartPrice(localItems)
-                    }
+            cartUpdates = remoteRepo.setupRealtimeCartUpdates(
+                channel.value!!.name,
+                cart.value!!.timestamp.toString()
+            ) {
+                if (it != null) {
+                    val items = it.map { obj ->
+                        Item(
+                            obj["name"] as String,
+                            obj["price"] as Double,
+                            obj["isChecked"] as Boolean
+                        )
+                    } as MutableList<Item>
+                    localItems = items
+                    _items.value = localItems
+                    setCartPrice(localItems)
                 }
+            }
         }
     }
 
