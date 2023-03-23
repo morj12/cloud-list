@@ -49,9 +49,6 @@ class CartFragment : Fragment() {
     private fun initRecyclerView() {
         adapter = CartAdapter()
         binding.rcCart.layoutManager = LinearLayoutManager(activity)
-        binding.rcCart.addItemDecoration(
-            DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
-        )
         binding.rcCart.adapter = adapter
         adapter.onItemClickedListener = { viewModel.setCart(it) }
         adapter.onItemDeleteClickedListener = {

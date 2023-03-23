@@ -26,7 +26,7 @@
     <string name="dialog_yes">Удалить</string>
     <string name="dialog_no">Назад</string>
     <string name="dialog_question_cart">Вы хотите удалить данную корзину?</string>
-    <string name="dialog_question_item">вы хотите удалить %1$s?</string>
+    <string name="dialog_question_item">Вы хотите удалить %1$s?</string>
     <string name="any_exception">Произошла ошибка</string>
     <string name="channel_not_found">Канал не найден</string>
     <string name="invalid_email_or_pw">Неверный логин или пароль</string>
