@@ -3,9 +3,9 @@
 This app allows you to create shopping lists that multiple users can use at once.
 
 <p align="middle">
-	<img src="img/carts.png" alt="Screenshot" width="150"/>
+	<img src="img/carts.png" alt="Screenshot" width="250"/>
 	&nbsp; &nbsp; &nbsp; &nbsp;
-	<img src="img/items.png" alt="Screenshot" width="150"/>
+	<img src="img/items.png" alt="Screenshot" width="250"/>
 <p/>
 
 ## How it works
