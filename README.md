@@ -19,4 +19,3 @@ You can also use a local account that does not need an internet connection. In t
 - MVVM - Use of LiveData and Flow
 - Clean Architecture - Code split into three parts: data, domain, presentation
 - Room - Use local SQLite database with coroutines
-- Fragments and bottom navigation bar
